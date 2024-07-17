@@ -348,15 +348,141 @@ void show_tests_error_message(int num_test);
  */
 char** push_history(char** current_history, int* current_size, char* new_message);
 
+/**
+ * Prints the hands of both the opponent and the player.
+ *
+ * This function constructs and displays formatted representations of the opponent's
+ * and player's card hands. The opponent's hand is represented as a series of 'x' marks
+ * enclosed in brackets, while the player's hand displays each card's color and either
+ * a number or action associated with it.
+ *
+ * @param num_oponent_cards The number of cards held by the opponent.
+ * @param player_cards      Array of Card structs representing the player's cards.
+ * @param num_player_cards  The number of cards held by the player.
+ */
 void print_hands(int num_oponent_cards, Card* player_cards, int num_player_cards);
+
+/**
+ * Counts the number of digits in a given integer number.
+ *
+ * @param number The integer number whose digits are to be counted.
+ * @return The number of digits in the given integer.
+ */
 int count_digits(int number);
+
+/**
+ * Converts an integer to a string representation.
+ *
+ * @param number The integer to be converted to a string.
+ * @param str    A character array where the resulting string will be stored.
+ *               The array must have enough space to store the string representation
+ *               of the integer plus the null-terminator.
+ * @return       A pointer to the character array `str` containing the string
+ *               representation of the integer.
+ */
 char* int_to_string(int number, char* str);
+
+/**
+ * Concatenates a single character to a given string.
+ *
+ * @param str       The original string to which the character will be appended.
+ * @param str_size  Pointer to an integer storing the current size of the string `str`.
+ * @return          A pointer to the updated string `str` with the appended character `ch`.
+ * 
+ * @note It dynamically reallocates memory for the string to accommodate the new character.
+ */
 char* concat_char(char* str, int* str_size, char ch);
+
+/**
+ * Concatenates a suffix string to a given string.
+ *
+ * This function appends the string `suffix` to the end of the string `str`.
+ *
+ * @param str       The original string to which the suffix will be appended.
+ * @param str_size  Pointer to an integer storing the current size of the string `str`.
+ * @return          A pointer to the updated string `str` with the appended suffix.
+ * 
+ * @note It dynamically reallocates memory for the string to accommodate the new suffix.
+ */
 char* concat_string(char* str, int* str_size, char* suffix);
+
+/**
+ * Converts an integer to a string surrounded by parentheses.
+ *
+ * @param number The integer to be converted and enclosed in parentheses.
+ * @return       A pointer to a newly allocated string containing the integer `number`
+ *               enclosed in parentheses. The caller is responsible for freeing this
+ *               memory when no longer needed.
+ * 
+ * @note It dynamically allocates memory for the resulting string.
+ */
 char* int_between_parenthesis(int number);
+
+/**
+ * Retrieves player cards from a deck, removing them from the deck.
+ *
+ * @param deck      Pointer to a pointer to an array of Card structures representing the deck.
+ *                  Upon returning, this pointer is updated to reflect the compacted deck.
+ * @param deck_size Pointer to an integer representing the current size of the deck.
+ *                  Upon returning, this value is updated to reflect the reduced size of the deck.
+ * @return          Pointer to an array of Card structures representing the player's cards.
+ *                  Memory is dynamically allocated for this array. The caller is responsible for freeing
+ *                  this memory when no longer needed.
+ * 
+ * @note Memory is allocated for the player's card array dynamically.
+ */
 Card* get_player_cards(Card** deck, int* deck_size);
-Card* compaction(Card* arr, int* arr_size, int hole);
+
+/**
+ * Removes an element from an array of Card structures and compacts the array.
+ *
+ * This function removes an element at the specified index `hole` from the array `arr`
+ * of Card structures. It compacts the array by shifting all subsequent elements one
+ * position to the left. Memory is reallocated to adjust the size of the array.
+ *
+ * @param arr       Pointer to a pointer to an array of Card structures.
+ *                  Upon returning, this pointer is updated to reflect the compacted array.
+ * @param arr_size  Pointer to an integer representing the current size of the array `arr`.
+ *                  Upon returning, this value is updated to reflect the reduced size of the array.
+ * @param hole      Index of the element to be removed from the array `arr`.
+ * @return          Pointer to the updated array `arr` after removing and compacting elements.
+ *                  Memory is reallocated as needed. The caller is responsible for freeing this memory
+ *                  when no longer needed.
+ */
+Card* compaction(Card** arr, int* arr_size, int hole);
+
+/**
+ * Generates a random index within the range of the given array size.
+ *
+ * @param arr_size The size of the array for which a random index is to be generated.
+ * @return         A random integer index within the range [0, arr_size-1].
+ */
 int random_array_index(int arr_size);
+
+/**
+ * Swaps two elements in an array of Card structures.
+ *
+ * This function swaps the elements at indices `i` and `j` in the array `arr`
+ * of Card structures. It does not allocate or deallocate memory.
+ *
+ * @param arr Pointer to an array of Card structures.
+ * @param i   Index of the first element to be swapped.
+ * @param j   Index of the second element to be swapped.
+ */
+void swap(Card* arr, int i, int j);
+
+/**
+ * Sorts an array of Card structures based on color and card comparison.
+ *
+ * This function implements a bubble sort algorithm to sort the array `arr`
+ * of Card structures in ascending order based on color first and then by
+ * comparing the cards using the `compare_cards` function.
+ *
+ * @param arr Pointer to an array of Card structures to be sorted.
+ * @param n   Number of elements in the array `arr`.
+ */
+void sort_cards(Card* arr, int n);
+
 
 int state = HOME;
 
@@ -752,6 +878,7 @@ void show_new_game_screen(Card* deck, int* deck_size) {
     int history_size = 0;
     int num_oponent_cards = 7;
     Card* player_cards = get_player_cards(&deck, deck_size);
+    sort_cards(player_cards, num_oponent_cards);
     
     history = push_history(history, &history_size, "Pegando carta inicial...");
     
@@ -760,14 +887,15 @@ void show_new_game_screen(Card* deck, int* deck_size) {
     print_game(history, history_size, top_card, 0, player_cards, 0);
     
     history = push_history(history, &history_size, "Distribuindo cartas...");
-
-    for (int i = 1; i <= num_oponent_cards; i++) {
+    
+    for (int i = 0; i <= num_oponent_cards; i++) {
         print_game(history, history_size, top_card, i, player_cards, i);
     }
     
     getchar();
     
-    //free(history);
+    free(history);
+    free(player_cards);
 }
 
 void show_rules_screen() {
@@ -923,40 +1051,6 @@ void print_line_with_prefix(char *prefix, const char *color_card, const char* an
         }
     }
 }
-// void print_player_card(int card_index, Card player_card) {
-//     char* ansi_color = get_color_ansi(player_card.color);
-//     char* color_card = get_color_name(player_card.color);
-//     int numberAction_length = 0;
-
-//     if (player_card.isNumber) {
-//         numberAction_length = 1;
-//     } else {
-//         numberAction_length  = strlen(player_card.numberAction.action);
-//     }
-
-//     int card_len = strlen(color_card) + 1 + numberAction_length;
-
-//     for (int j = 0; j < SCREEN_LENGTH; j++) {
-//         if (j == 0 || j == SCREEN_LENGTH - 1) {
-//             printf("*");
-//             if (j == SCREEN_LENGTH - 1) {
-//                 printf("\n");
-//             }
-//         } else if (j == 1 || j == SCREEN_LENGTH - 2) {
-//             printf(" ");
-//         } else if (j ==) {
-
-//         } else {
-            
-
-//             if (color_card != NULL && j - 2 < card_len) {
-//                 printf("%s%c%s", ansi_color, color_card[j - 2], RESET);
-//             } else {
-//                 printf(" ");
-//             }
-//         }
-//     }
-// }
 
 // When this function is called, the deck size will always be equivalent to the maximum card size
 Card get_card_for_table(Card** deck, int* deck_size) {
@@ -1143,9 +1237,13 @@ void print_hands(int num_oponent_cards, Card* player_cards, int num_player_cards
         int preffix_length = (int) (strlen(preffix));
         preffix = concat_char(preffix, &preffix_length, ' ');
         print_line_with_prefix(preffix, current_card, get_color_ansi(current_player_card.color));
+
+        free(current_card);
     }
 
-    // LEMBRE-SE DE DESALOCAR A MEMÓRIA DA MÃO DO OPONENTE E DO JOGADOR
+    print_line();
+
+    free(oponent_hand);
 }
 
 char* int_between_parenthesis(int number) {
@@ -1201,11 +1299,15 @@ char* concat_string(char* str, int* str_size, char* suffix) {
 Card* get_player_cards(Card** deck, int* deck_size) {
     Card* player_cards = (Card*) malloc(INITIAL_NUMBER_CARDS * sizeof(Card));
 
+    if (player_cards == NULL) {
+        printf("Erro ao alocar memória.");
+        exit(1);
+    }
+
     for (int i = 0; i < INITIAL_NUMBER_CARDS; i++) {
         int random_index = random_array_index(*deck_size);
-        Card random_card = *deck[random_index];
-        *deck = compaction(*deck, deck_size, random_index);
-        player_cards[i] = random_card;
+        player_cards[i] = (*deck)[random_index];
+        (*deck) = compaction(deck, deck_size, random_index);
     }
 
     return player_cards;
@@ -1216,27 +1318,64 @@ int random_array_index(int arr_size) {
     return random() % arr_size;
 }
 
-Card* compaction(Card* arr, int* arr_size, int hole) {
-    int new_size = *arr_size - 1, delay = 0;
-    Card* new_arr = (Card*) malloc(new_size * sizeof(Card));
-    
-    int j = 0;
-    for (int i = 0; i < *arr_size; i++) {
-        if (i != hole) {
-            new_arr[j++] = arr[i];
-        }
+Card* compaction(Card** arr, int* arr_size, int hole) {
+    if (hole < 0 || hole >= *arr_size) {
+        return *arr; 
     }
 
-    *arr_size = new_size;
-    free(arr);
+    int new_size = *arr_size - 1;
 
-    return new_arr;
+    for (int i = hole; i < *arr_size; i++) {
+        (*arr)[i] = (*arr)[i + 1];
+    }
+
+    Card* new_arr = (Card*) realloc(*arr, new_size * sizeof(Card));
+
+    if (new_arr == NULL) {
+        printf("[ERROR]: Falha ao realocar memória.\n");
+        exit(1);
+    }
+
+    *arr = new_arr;
+    *arr_size = new_size;
+
+    return *arr;
+}
+
+int compare_cards(Card card1, Card card2) {
+    if (card1.isNumber && card2.isNumber) {
+        return card1.numberAction.number - card2.numberAction.number;
+    } else if (!card1.isNumber && !card2.isNumber) {
+        return strcmp(card1.numberAction.action, card2.numberAction.action);
+    } else {
+        return card2.isNumber - card1.isNumber;
+    }
+}
+
+void swap(Card* arr, int i, int j) {
+    Card temp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = temp;
+}
+
+void sort_cards(Card* arr, int n) {
+    int i, j;
+
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - i - 1; j++) {
+            if (arr[j].color > arr[j + 1].color ||
+            (arr[j].color == arr[j + 1].color && compare_cards(arr[j], arr[j + 1]) > 0)) {
+                swap(arr, j, j + 1);
+            }
+        }
+    }
 }
 
 /*
  * PENDÊNCIAS
  * [] - Escreva os testes unitários para as funções que precisarem
- * [] - Faça as documentações das funções 
+ * [x] - Faça as documentações das funções 
+ * [] - Ajeite a função `int_to_string` para que ela aloque memória suficiente para o uso da string como representação do número. E ajeite a documentação dela logo em seguida.
  * [] - Continure programando a exibição do jogo
      Falta ainda:
          - Animação de distribuição de cartas
