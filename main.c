@@ -256,7 +256,7 @@ void print_line();
  * @note The caller is responsible for
  * freeing the memory allocated for the returned array.
  */
-char **reverse(char **arr, int len);
+void reverse(char **arr, int len);
 
 /**
  * @brief Retrieves a random normal card from the deck and removes it from the deck.
@@ -390,7 +390,7 @@ int count_digits(int number);
  * @return       A pointer to the character array `str` containing the string
  *               representation of the integer.
  */
-char *int_to_string(int number, char *str);
+char *int_to_string(int number);
 
 /**
  * Concatenates a single character to a given string.
@@ -459,7 +459,7 @@ Card *get_player_cards(Card **deck, int *deck_size);
  *                  Memory is reallocated as needed. The caller is responsible for freeing this memory
  *                  when no longer needed.
  */
-Card *compaction(Card **arr, int *arr_size, int hole);
+void compaction(Card *arr, int *arr_size, int hole);
 
 /**
  * Generates a random index within the range of the given array size.
@@ -492,6 +492,8 @@ void swap(Card *arr, int i, int j);
  * @param n   Number of elements in the array `arr`.
  */
 void sort_cards(Card *arr, int n);
+
+void str_compaction(char **arr, int *arr_size, int hole);
 
 int state = HOME;
 
@@ -788,49 +790,52 @@ void run_tests()
     // Test 2
     char *reverse_test[] = {"hello", "world"};
     char *reverse_expected[] = {"world", "hello"};
-    char **reverse_result = reverse(reverse_test, 2);
+    reverse(reverse_test, 2);
+    for (int i = 0; i < 2; i++)
+    {
+        printf("%s\n", reverse_test[i]);
+    }
 
-    if (!are_arrays_equal((const char **)reverse_expected, 2, (const char **)reverse_result, 2))
+    if (!are_arrays_equal((const char **)reverse_expected, 2, (const char **)reverse_test, 2))
     {
         show_tests_error_message(num_tests + 1);
     }
 
-    free(reverse_result);
     num_tests++;
 
     // Test 3
     char *reverse_test2[] = {"one", "two", "three"};
     char *reverse_expected2[] = {"three", "two", "one"};
-    char **reverse_result2 = reverse(reverse_test2, 3);
+    reverse(reverse_test2, 3);
 
-    if (!are_arrays_equal((const char **)reverse_expected2, 3, (const char **)reverse_result2, 3))
+    if (!are_arrays_equal((const char **)reverse_expected2, 3, (const char **)reverse_test2, 3))
     {
         show_tests_error_message(num_tests + 1);
     }
 
-    free(reverse_result2);
     num_tests++;
 
     // Test 4
-    // char* reverse_null_test = NULL;
-    // char* reverse_null_expected = NULL;
-    // char** reverse_null_result = reverse(reverse_null_test, 0);
+    char **reverse_null_test = NULL;
+    char **reverse_null_expected = NULL;
+    reverse(reverse_null_test, 0);
 
-    // if (reverse_null_result != reverse_null_expected) {
-    //     show_tests_error_message(num_tests + 1);
-    // }
-    // num_tests++;
-
-    // Test 5
-    char *reverse_one_element_test[] = {"test"};
-    char **reverse_one_element_result = reverse(reverse_one_element_test, 1);
-
-    if (!are_arrays_equal((const char **)reverse_one_element_test, 1, (const char **)reverse_one_element_result, 1))
+    if (reverse_null_test != reverse_null_expected)
     {
         show_tests_error_message(num_tests + 1);
     }
     num_tests++;
-    free(reverse_one_element_result);
+
+    // Test 5
+    char *reverse_one_element_test[] = {"test"};
+    char *reverse_one_element_expected[] = {"test"};
+    reverse(reverse_one_element_test, 1);
+
+    if (!are_arrays_equal((const char **)reverse_one_element_expected, 1, (const char **)reverse_one_element_test, 1))
+    {
+        show_tests_error_message(num_tests + 1);
+    }
+    num_tests++;
 
     // Test 6
     Color red_test = RED;
@@ -1067,9 +1072,8 @@ void show_new_game_screen(Card *deck, int *deck_size)
 
     char **history = NULL;
     int history_size = 0;
-    int num_oponent_cards = 7;
     Card *player_cards = get_player_cards(&deck, deck_size);
-    sort_cards(player_cards, num_oponent_cards);
+    sort_cards(player_cards, INITIAL_NUMBER_CARDS);
 
     history = push_history(history, &history_size, "Pegando carta inicial...");
 
@@ -1079,7 +1083,7 @@ void show_new_game_screen(Card *deck, int *deck_size)
 
     history = push_history(history, &history_size, "Distribuindo cartas...");
 
-    for (int i = 0; i <= num_oponent_cards; i++)
+    for (int i = 0; i <= INITIAL_NUMBER_CARDS; i++)
     {
         print_game(history, history_size, top_card, i, player_cards, i);
     }
@@ -1169,7 +1173,7 @@ void print_bold(char *message)
 
 void print_history(char **messages, int messages_length)
 {
-    messages = reverse(messages, messages_length);
+    reverse(messages, messages_length);
 
     print_line();
 
@@ -1190,19 +1194,18 @@ void print_line()
     printf("\n");
 }
 
-char **reverse(char **arr, int len)
+// essa função não precisa de realocaçaõ nem de alocação
+void reverse(char **arr, int len)
 {
     if (arr == NULL || len == 0)
-        return NULL;
+        return;
 
-    char **reversed_array = (char **)malloc(len * sizeof(char *));
-
-    for (int i = 0; i < len; i++)
+    for (int i = 0; i < len / 2; i++)
     {
-        reversed_array[i] = arr[len - 1 - i];
+        char *temp = arr[i];
+        arr[i] = arr[len - 1 - i];
+        arr[len - 1 - i] = temp;
     }
-
-    return reversed_array;
 }
 
 void print_game(char **messages, int messages_length, Card top_card, int num_oponent_cards, Card *player_cards, int num_player_cards)
@@ -1318,18 +1321,7 @@ Card get_card_for_table(Card **deck, int *deck_size)
     }
 
     // Compaction & Left Shifting
-    for (int i = corresponding_index; i < (*(deck_size)-1); i++)
-    {
-        (*deck)[i] = (*deck)[i + 1];
-    }
-    *deck = (Card *)realloc(*deck, ((*deck_size) - 1) * sizeof(Card));
-    *deck_size -= 1;
-
-    if (*deck == NULL && *deck_size > 0)
-    {
-        printf("[ERROR]: Falha ao realocar memória.\n");
-        exit(1);
-    }
+    compaction(*deck, deck_size, corresponding_index);
 
     return selected_card;
 }
@@ -1410,10 +1402,11 @@ char **push_history(char **current_history, int *current_size, char *new_message
     {
         free(current_history[0]);
         // Compaction & Left Shifting
-        for (int i = 0; i < *current_size - 1; i++)
-        {
-            current_history[i] = current_history[i + 1];
-        }
+        // for (int i = 0; i < *current_size - 1; i++)
+        // {
+        //     current_history[i] = current_history[i + 1];
+        // }
+        str_compaction(current_history, current_size, 0);
     }
 
     current_history[*current_size - 1] = (char *)malloc(strlen(new_message) + 1);
@@ -1462,12 +1455,12 @@ void print_hands(int num_oponent_cards, Card *player_cards, int num_player_cards
         int number_action_length = 0;
 
         char card_index_str[digits + 1];
-        char *number_str;
 
         Card current_player_card = player_cards[i];
 
         number_action_length = current_player_card.isNumber ? 1 : strlen(current_player_card.numberAction.action);
 
+        char *number_str = int_to_string(current_player_card.numberAction.number);
         /*
          * Example: "Vermelho 9\0" = 11
          * = [color.length] + 1 + [numberAction.length] + 1
@@ -1483,7 +1476,6 @@ void print_hands(int num_oponent_cards, Card *player_cards, int num_player_cards
 
         if (current_player_card.isNumber)
         {
-            number_str = int_to_string(current_player_card.numberAction.number, number_str);
             current_card = concat_string(current_card, &current_str_player_length, number_str);
         }
         else
@@ -1498,6 +1490,7 @@ void print_hands(int num_oponent_cards, Card *player_cards, int num_player_cards
         print_line_with_prefix(preffix, current_card, get_color_ansi(current_player_card.color));
 
         free(current_card);
+        free(number_str);
     }
 
     print_line();
@@ -1532,8 +1525,11 @@ int count_digits(int number)
     return count;
 }
 
-char *int_to_string(int number, char *str)
+char *int_to_string(int number)
 {
+    int digits = count_digits(number);
+    char *str = (char *)malloc((digits + 1) * sizeof(char));
+
     sprintf(str, "%d", number);
 
     return str;
@@ -1576,7 +1572,7 @@ Card *get_player_cards(Card **deck, int *deck_size)
     {
         int random_index = random_array_index(*deck_size);
         player_cards[i] = (*deck)[random_index];
-        (*deck) = compaction(deck, deck_size, random_index);
+        compaction(*deck, deck_size, random_index);
     }
 
     return player_cards;
@@ -1588,32 +1584,45 @@ int random_array_index(int arr_size)
     return random() % arr_size;
 }
 
-Card *compaction(Card **arr, int *arr_size, int hole)
+void compaction(Card *arr, int *arr_size, int hole)
 {
     if (hole < 0 || hole >= *arr_size)
     {
-        return *arr;
+        return;
     }
 
     int new_size = *arr_size - 1;
 
     for (int i = hole; i < *arr_size; i++)
     {
-        (*arr)[i] = (*arr)[i + 1];
+        arr[i] = arr[i + 1];
     }
 
-    Card *new_arr = (Card *)realloc(*arr, new_size * sizeof(Card));
+    arr = (Card *)realloc(arr, new_size * sizeof(Card));
 
-    if (new_arr == NULL)
+    if (arr == NULL)
     {
         printf("[ERROR]: Falha ao realocar memória.\n");
         exit(1);
     }
 
-    *arr = new_arr;
     *arr_size = new_size;
+}
 
-    return *arr;
+void str_compaction(char **arr, int *arr_size, int hole)
+{
+    if (hole < 0 || hole >= *arr_size)
+    {
+        return;
+    }
+
+    for (int i = hole; i < *arr_size; i++)
+    {
+        int new_length = strlen(arr[i + 1]);
+        arr[i] = (char *)realloc(arr[i], (new_length + 1) * sizeof(char));
+
+        arr[i] = arr[i + 1];
+    }
 }
 
 int compare_cards(Card card1, Card card2)
@@ -1658,8 +1667,8 @@ void sort_cards(Card *arr, int n)
 
 /*
  * PENDÊNCIAS
- * [] - Escreva os testes unitários para as funções que precisarem
- * [x] - Faça as documentações das funções
+ * [o] - Escreva os testes unitários para as funções que precisarem
+ * [] - Faça as documentações das funções
  * [] - Ajeite a função `int_to_string` para que ela aloque memória suficiente para o uso da string como representação do número. E ajeite a documentação dela logo em seguida.
  * [] - Continure programando a exibição do jogo
      Falta ainda:
