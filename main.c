@@ -2,74 +2,17 @@
 #include <stdbool.h>
 #include <string.h>
 #include <time.h>
-#include <stdarg.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#define TEST_ASSERT_EQUAL(expected, actual, test_num)                                             \
-    if ((expected) != (actual))                                                                   \
-    {                                                                                             \
-        printf("ERROR: Teste %d falhou. Esperado: %d, Obtido: %d\n", test_num, expected, actual); \
-        exit(1);                                                                                  \
-    }
-
-#define TEST_ASSERT_EQUAL_STR(expected, actual, test_num)                                                 \
-    if (strcmp(expected, actual) != 0)                                                                    \
-    {                                                                                                     \
-        printf("ERROR: Teste %d falhou. Esperado: \"%s\", Obtido: \"%s\"\n", test_num, expected, actual); \
-        exit(1);                                                                                          \
-    }
+#include "ansi.h"
+#include "tests.h"
+#include "types.h"
+#include "screens_def.h"
 
 #define MAX_CARDS 108
 #define TRANSITION_TIME 1000
 #define SCREEN_LENGTH 40
 #define INITIAL_NUMBER_CARDS 7
-
-#define HOME 0
-#define MAIN_MENU 1
-#define NEW_GAME 2
-#define RULES 3
-#define HOW_TO_PLAY 4
-#define EXIT 99
-
-// Definições de cores ANSI
-#define RESET "\x1b[0m"
-#define BOLD "\x1b[1m"
-#define ITALIC "\x1b[3m"
-#define ANSI_RED "\x1b[31m"
-#define ANSI_GREEN "\x1b[32m"
-#define ANSI_YELLOW "\x1b[33m"
-#define ANSI_BLUE "\x1b[34m"
-#define WHITE "\x1b[37m"
-
-typedef enum
-{
-    RED,
-    GREEN,
-    BLUE,
-    YELLOW,
-    WILD,
-} Color;
-
-typedef union
-{
-    unsigned int number;
-    char action[8];
-} NumberAction;
-
-typedef struct
-{
-    Color color;
-    NumberAction numberAction;
-    bool isNumber;
-} Card;
-
-char *color_mapper[] = {
-    "Vermelho",
-    "Verde",
-    "Azul",
-    "Amarelo",
-    "Especial"};
 
 /**
  * @brief Creates and initializes a deck of cards.
@@ -218,24 +161,6 @@ void sleep_time(int milliseconds);
  * @param next_screen The identifier of the screen to transition to.
  */
 void transition(int next_screen);
-
-/**
- * @brief Prints a stylized message to the console.
- *
- * This function prints a message with the specified styles applied.
- *
- * @param message The message to be printed.
- * @param n The number of style arguments provided.
- * @param ... The styles to be applied, passed as additional arguments.
- */
-void stylized_print(char *message, int n, ...);
-
-/**
- * @brief Prints a message in bold style to the console.
- *
- * @param message The message to be printed in bold.
- */
-void print_bold(char *message);
 
 void print_arr(Card *arr, int size);
 void print_game(char **messages, int messages_length, Card top_card, int num_oponent_cards, Card *player_cards, int num_player_cards);
@@ -1156,25 +1081,6 @@ void transition(int next_screen)
     clear_screen();
     sleep_time(TRANSITION_TIME);
     state = next_screen;
-}
-
-void stylized_print(char *message, int n, ...)
-{
-    va_list list;
-    va_start(list, n);
-    for (int i = 0; i < n; i++)
-    {
-        char *arg = va_arg(list, char *);
-        printf("%s", arg);
-    }
-    printf("%s" RESET, message);
-
-    va_end(list);
-}
-
-void print_bold(char *message)
-{
-    stylized_print(message, 1, BOLD);
 }
 
 void print_history(char **messages, int messages_length)
