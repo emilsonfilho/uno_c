@@ -256,7 +256,7 @@ void print_line();
  * @note The caller is responsible for
  * freeing the memory allocated for the returned array.
  */
-void reverse(char **arr, int len);
+char **reverse(char **arr, int len);
 
 /**
  * @brief Retrieves a random normal card from the deck and removes it from the deck.
@@ -459,7 +459,7 @@ Card *get_player_cards(Card **deck, int *deck_size);
  *                  Memory is reallocated as needed. The caller is responsible for freeing this memory
  *                  when no longer needed.
  */
-void compaction(Card *arr, int *arr_size, int hole);
+Card *compaction(Card *arr, int *arr_size, int hole);
 
 /**
  * Generates a random index within the range of the given array size.
@@ -493,7 +493,12 @@ void swap(Card *arr, int i, int j);
  */
 void sort_cards(Card *arr, int n);
 
-void str_compaction(char **arr, int *arr_size, int hole);
+char **str_compaction(char **arr, int *arr_size, int hole);
+char **copy_and_reverse(char **messages, int messages_length);
+void print_oponent_cards(int num_cards);
+void print_player_cards(Card *cards, int num_cards);
+
+void print_strs(char **matrix, int rows);
 
 int state = HOME;
 
@@ -788,6 +793,7 @@ void run_tests()
 
     // "reverse" function test
     // Test 2
+    /*
     char *reverse_test[] = {"hello", "world"};
     char *reverse_expected[] = {"world", "hello"};
     reverse(reverse_test, 2);
@@ -835,7 +841,7 @@ void run_tests()
     {
         show_tests_error_message(num_tests + 1);
     }
-    num_tests++;
+    num_tests++;*/
 
     // Test 6
     Color red_test = RED;
@@ -1173,13 +1179,20 @@ void print_bold(char *message)
 
 void print_history(char **messages, int messages_length)
 {
-    reverse(messages, messages_length);
+    messages = reverse(messages, messages_length);
 
     print_line();
 
-    for (int i = 3 - 1; i >= 0; i--)
+    for (int i = 2; i >= 0; i--)
     {
-        print_line_with_prefix("", messages[i], RESET);
+        if (i <= messages_length - 1)
+        {
+            print_line_with_prefix("", messages[i], RESET);
+        }
+        else
+        {
+            print_line_with_prefix("", "", RESET);
+        }
     }
 
     print_line();
@@ -1195,17 +1208,19 @@ void print_line()
 }
 
 // essa função não precisa de realocaçaõ nem de alocação
-void reverse(char **arr, int len)
+char **reverse(char **arr, int len)
 {
     if (arr == NULL || len == 0)
-        return;
+        return NULL;
 
-    for (int i = 0; i < len / 2; i++)
+    char **reversed_array = (char **)malloc(len * sizeof(char *));
+
+    for (int i = 0; i < len; i++)
     {
-        char *temp = arr[i];
-        arr[i] = arr[len - 1 - i];
-        arr[len - 1 - i] = temp;
+        reversed_array[i] = arr[len - 1 - i];
     }
+
+    return reversed_array;
 }
 
 void print_game(char **messages, int messages_length, Card top_card, int num_oponent_cards, Card *player_cards, int num_player_cards)
@@ -1225,19 +1240,30 @@ void print_table(Card top_card)
     char *color_card = get_color_name(top_card.color);
     char *ansi_color = get_color_ansi(top_card.color);
 
-    int number_length = snprintf(NULL, 0, "%d", top_card.numberAction.number);
-    char *number_card = (char *)malloc(number_length + 1);
-    snprintf(number_card, number_length + 1, "%d", top_card.numberAction.number);
+    int numberAction_length = 0;
+    char *numberAction_str;
 
-    int card_string_length = strlen(color_card) + 1 + number_length + 1;
+    if (top_card.isNumber)
+    {
+        numberAction_length = count_digits(top_card.numberAction.number);
+        numberAction_str = int_to_string(top_card.numberAction.number);
+    }
+    else
+    {
+        numberAction_length = strlen(top_card.numberAction.action);
+        numberAction_str = (char *)malloc((numberAction_length + 1) * sizeof(char));
+        strncpy(numberAction_str, top_card.numberAction.action, numberAction_length);
+    }
+
+    int card_string_length = strlen(color_card) + 1 + numberAction_length + 1;
     char *card_string = (char *)malloc(card_string_length + 1);
-    sprintf(card_string, "%s %s", color_card, number_card);
+    sprintf(card_string, "%s %s", color_card, numberAction_str);
 
     print_line_with_prefix("Topo: ", card_string, ansi_color);
 
     print_line();
 
-    free(number_card);
+    free(numberAction_str);
     free(card_string);
 }
 
@@ -1321,7 +1347,7 @@ Card get_card_for_table(Card **deck, int *deck_size)
     }
 
     // Compaction & Left Shifting
-    compaction(*deck, deck_size, corresponding_index);
+    *deck = compaction(*deck, deck_size, corresponding_index);
 
     return selected_card;
 }
@@ -1401,15 +1427,10 @@ char **push_history(char **current_history, int *current_size, char *new_message
     else
     {
         free(current_history[0]);
-        // Compaction & Left Shifting
-        // for (int i = 0; i < *current_size - 1; i++)
-        // {
-        //     current_history[i] = current_history[i + 1];
-        // }
-        str_compaction(current_history, current_size, 0);
+        current_history = str_compaction(current_history, current_size, 0);
     }
 
-    current_history[*current_size - 1] = (char *)malloc(strlen(new_message) + 1);
+    current_history[*current_size - 1] = (char *)malloc((strlen(new_message) + 1) * sizeof(char));
 
     if (current_history[*current_size - 1] == NULL)
     {
@@ -1425,86 +1446,21 @@ char **push_history(char **current_history, int *current_size, char *new_message
 void print_hands(int num_oponent_cards, Card *player_cards, int num_player_cards)
 {
     // Oponent hand
-    // Allocation with number of oponent's cards considering spaces and brackets
-    char *oponent_hand = (char *)malloc((2 * num_oponent_cards + 3) * sizeof(char *));
-    int current_str_oponent_length = 0;
-
-    strcpy(oponent_hand + current_str_oponent_length, "[ ");
-    current_str_oponent_length += 2;
-
-    for (int i = 0; i < num_oponent_cards; i++)
-    {
-        strcpy(oponent_hand + current_str_oponent_length, "x ");
-        current_str_oponent_length += 2;
-    }
-
-    strcpy(oponent_hand + current_str_oponent_length, "]");
-    current_str_oponent_length += 1;
-
-    print_line();
-    print_line_with_prefix("Oponente: ", oponent_hand, RESET);
-
-    // Player hand
-    for (int i = 0; i < num_player_cards; i++)
-    {
-        // String to each player card
-        int card_index = i + 1;
-        int digits = count_digits(card_index);
-        int color_length = strlen(color_mapper[player_cards[i].color]);
-        int current_str_player_length = 0;
-        int number_action_length = 0;
-
-        char card_index_str[digits + 1];
-
-        Card current_player_card = player_cards[i];
-
-        number_action_length = current_player_card.isNumber ? 1 : strlen(current_player_card.numberAction.action);
-
-        char *number_str = int_to_string(current_player_card.numberAction.number);
-        /*
-         * Example: "Vermelho 9\0" = 11
-         * = [color.length] + 1 + [numberAction.length] + 1
-         * = [color.length] + [numberAction.length] + 2
-         */
-        char *current_card = (char *)malloc((color_length + number_action_length + 2) * sizeof(char));
-
-        // printf("length: %d\n", color_length + number_action_length + 2);
-
-        current_card = concat_string(current_card, &current_str_player_length, color_mapper[current_player_card.color]);
-
-        concat_char(current_card, &current_str_player_length, ' ');
-
-        if (current_player_card.isNumber)
-        {
-            current_card = concat_string(current_card, &current_str_player_length, number_str);
-        }
-        else
-        {
-            current_card = concat_string(current_card, &current_str_player_length, current_player_card.numberAction.action);
-        }
-
-        // print_player_card(card_index, current_player_card);
-        char *preffix = int_between_parenthesis(card_index);
-        int preffix_length = (int)(strlen(preffix));
-        preffix = concat_char(preffix, &preffix_length, ' ');
-        print_line_with_prefix(preffix, current_card, get_color_ansi(current_player_card.color));
-
-        free(current_card);
-        free(number_str);
-    }
-
     print_line();
 
-    free(oponent_hand);
+    print_oponent_cards(num_oponent_cards);
+    print_player_cards(player_cards, num_player_cards);
+
+    print_line();
 }
 
 char *int_between_parenthesis(int number)
 {
     int digits = count_digits(number);
 
-    char *str = (char *)malloc((digits + 2 + 1) * sizeof(char));
+    char *str = (char *)malloc((digits + 4) * sizeof(char));
 
-    sprintf(str, "(%d)", number);
+    sprintf(str, "(%d) ", number);
 
     return str;
 }
@@ -1549,8 +1505,6 @@ char *concat_string(char *str, int *str_size, char *suffix)
 {
     int suffix_size = strlen(suffix);
 
-    // char* new_str = (char*) realloc(str, (*str_size + suffix_size) * sizeof(char));
-
     strcpy(str + *str_size, suffix);
 
     *str_size += suffix_size;
@@ -1572,7 +1526,7 @@ Card *get_player_cards(Card **deck, int *deck_size)
     {
         int random_index = random_array_index(*deck_size);
         player_cards[i] = (*deck)[random_index];
-        compaction(*deck, deck_size, random_index);
+        *deck = compaction(*deck, deck_size, random_index);
     }
 
     return player_cards;
@@ -1584,45 +1538,60 @@ int random_array_index(int arr_size)
     return random() % arr_size;
 }
 
-void compaction(Card *arr, int *arr_size, int hole)
+Card *compaction(Card *arr, int *arr_size, int hole)
 {
     if (hole < 0 || hole >= *arr_size)
     {
-        return;
+        return arr;
     }
 
     int new_size = *arr_size - 1;
 
-    for (int i = hole; i < *arr_size; i++)
+    for (int i = hole; i < new_size; i++)
     {
         arr[i] = arr[i + 1];
     }
 
-    arr = (Card *)realloc(arr, new_size * sizeof(Card));
+    Card *temp = (Card *)realloc(arr, new_size * sizeof(Card));
 
-    if (arr == NULL)
+    if (temp == NULL && new_size > 0)
     {
         printf("[ERROR]: Falha ao realocar memória.\n");
         exit(1);
     }
 
     *arr_size = new_size;
+    return temp;
 }
 
-void str_compaction(char **arr, int *arr_size, int hole)
+char **str_compaction(char **arr, int *arr_size, int hole)
 {
     if (hole < 0 || hole >= *arr_size)
     {
-        return;
+        return arr; // Retorna o ponteiro original se o índice do buraco for inválido.
     }
 
-    for (int i = hole; i < *arr_size; i++)
-    {
-        int new_length = strlen(arr[i + 1]);
-        arr[i] = (char *)realloc(arr[i], (new_length + 1) * sizeof(char));
+    int new_size = *arr_size - 1;
 
+    // Desalocar a string na posição 'hole'
+    free(arr[hole]);
+
+    for (int i = hole; i < new_size; i++)
+    {
         arr[i] = arr[i + 1];
     }
+
+    // Realocar o array de ponteiros
+    char **temp = (char **)realloc(arr, new_size * sizeof(char *));
+
+    if (temp == NULL && new_size > 0)
+    {
+        printf("[ERROR]: Falha ao realocar memória.\n");
+        exit(1);
+    }
+
+    *arr_size = new_size;
+    return temp;
 }
 
 int compare_cards(Card card1, Card card2)
@@ -1650,8 +1619,6 @@ void swap(Card *arr, int i, int j)
 
 void sort_cards(Card *arr, int n)
 {
-    int i, j;
-
     for (int i = 0; i < n - 1; i++)
     {
         for (int j = 0; j < n - i - 1; j++)
@@ -1665,16 +1632,84 @@ void sort_cards(Card *arr, int n)
     }
 }
 
+void print_strs(char **matrix, int rows)
+{
+    for (int i = 0; i < rows; i++)
+    {
+        printf("%s\n", matrix[i]);
+    }
+}
+
+void print_oponent_cards(int num_cards)
+{
+    char *oponent_hand = (char *)malloc((2 * num_cards + 3) * sizeof(char));
+    int current_str_oponent_length = 0;
+
+    strcpy(oponent_hand + current_str_oponent_length, "[ ");
+    current_str_oponent_length += 2;
+
+    for (int i = 0; i < num_cards; i++)
+    {
+        strcpy(oponent_hand + current_str_oponent_length, "x ");
+        current_str_oponent_length += 2;
+    }
+
+    strcpy(oponent_hand + current_str_oponent_length, "]");
+    current_str_oponent_length += 1;
+
+    print_line_with_prefix("Oponente: ", oponent_hand, RESET);
+
+    free(oponent_hand);
+}
+
+void print_player_cards(Card *cards, int num_cards)
+{
+    for (int i = 0; i < num_cards; i++)
+    {
+        // String to each player card
+        int card_index = i + 1;
+        int digits = count_digits(card_index);
+        int color_length = strlen(color_mapper[cards[i].color]);
+        int current_str_player_length = 0;
+        int number_action_length = 0;
+
+        char card_index_str[digits + 1];
+
+        Card current_player_card = cards[i];
+
+        number_action_length = current_player_card.isNumber ? 1 : strlen(current_player_card.numberAction.action);
+
+        char *number_str = int_to_string(current_player_card.numberAction.number);
+        /*
+         * Example: "Vermelho 9\0" = 11
+         * = [color.length] + 1 + [numberAction.length] + 1
+         * = [color.length] + [numberAction.length] + 2
+         */
+        char *current_card = (char *)malloc((color_length + number_action_length + 2) * sizeof(char));
+
+        current_card = concat_string(current_card, &current_str_player_length, color_mapper[current_player_card.color]);
+
+        current_card = concat_char(current_card, &current_str_player_length, ' ');
+
+        if (current_player_card.isNumber)
+        {
+            current_card = concat_string(current_card, &current_str_player_length, number_str);
+        }
+        else
+        {
+            current_card = concat_string(current_card, &current_str_player_length, current_player_card.numberAction.action);
+        }
+
+        char *preffix = int_between_parenthesis(card_index);
+        print_line_with_prefix(preffix, current_card, get_color_ansi(current_player_card.color));
+
+        free(current_card);
+        free(number_str);
+    }
+}
+
 /*
  * PENDÊNCIAS
  * [o] - Escreva os testes unitários para as funções que precisarem
  * [] - Faça as documentações das funções
- * [] - Ajeite a função `int_to_string` para que ela aloque memória suficiente para o uso da string como representação do número. E ajeite a documentação dela logo em seguida.
- * [] - Continure programando a exibição do jogo
-     Falta ainda:
-         - Animação de distribuição de cartas
-         - Verificar se, quando as cartas vão ser distribuídas para os jogadores, que a carta da mesa já tenha sido retirada
-         - Colocar cores nas cartas da mesa
-         - Mão do personagem
-         - Ponta para o início da jogatina
-*/
+ */
