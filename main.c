@@ -497,6 +497,8 @@ char **str_compaction(char **arr, int *arr_size, int hole);
 char **copy_and_reverse(char **messages, int messages_length);
 void print_oponent_cards(int num_cards);
 void print_player_cards(Card *cards, int num_cards);
+void play_card(Card **cards, int *cards_size, Card *top_card);
+void delete_last_line();
 
 void print_strs(char **matrix, int rows);
 
@@ -1077,8 +1079,10 @@ void show_new_game_screen(Card *deck, int *deck_size)
     clear_input_buffer();
 
     char **history = NULL;
-    int history_size = 0;
+    int history_size = 0, num_cards_player = INITIAL_NUMBER_CARDS, num_cards_oponent = INITIAL_NUMBER_CARDS;
     Card *player_cards = get_player_cards(&deck, deck_size);
+    Card *oponent_cards = get_player_cards(&deck, deck_size);
+    sort_cards(oponent_cards, INITIAL_NUMBER_CARDS);
     sort_cards(player_cards, INITIAL_NUMBER_CARDS);
 
     history = push_history(history, &history_size, "Pegando carta inicial...");
@@ -1094,7 +1098,7 @@ void show_new_game_screen(Card *deck, int *deck_size)
         print_game(history, history_size, top_card, i, player_cards, i);
     }
 
-    getchar();
+    play_card(&player_cards, &num_cards_player, &top_card);
 
     free(history);
     free(player_cards);
@@ -1706,6 +1710,65 @@ void print_player_cards(Card *cards, int num_cards)
         free(current_card);
         free(number_str);
     }
+}
+
+void play_card(Card **cards, int *cards_size, Card *top_card) 
+{
+    bool was_valid_play = false, was_last_entry_invalid = false;
+    int choice = 0;
+    
+    do {
+        printf("Qual carta você quer jogar? ");
+        scanf("%d", &choice);
+
+        if (choice < 1 || choice > *cards_size) {
+            delete_lines_by_errors(was_last_entry_invalid);
+            was_last_entry_invalid = true;
+
+            printf("Essa carta não está na sua mão, tente novamente.\n");
+        } else if ((*cards)[choice - 1].color != top_card->color) {
+            if (top_card->isNumber) {
+                if ((*cards)[choice - 1].numberAction.number != top_card->numberAction.number) {
+                    delete_lines_by_errors(was_last_entry_invalid);
+                    was_last_entry_invalid = true;
+                    
+                    printf("Essa carta não pode ser jogada.\n");
+                } else {
+                    was_valid_play = true;
+                }
+            } else {
+                if (strcmp((*cards)[choice - 1].numberAction.action, top_card->numberAction.action) != 0) {
+                    delete_lines_by_errors(was_last_entry_invalid);
+                    was_last_entry_invalid = true;
+
+                    printf("Essa carta não pode ser jogada.\n");
+                } else {
+                    was_valid_play = true;
+                }
+            }
+        } else {
+            was_valid_play = true;
+        }
+    } while (!was_valid_play);
+
+    *cards = compaction(*cards, cards_size, choice - 1);
+
+    // A carta jogada está sendo retirada de dentro do array
+    print_arr(*cards, *cards_size);
+
+    getchar();
+}
+
+void delete_last_line()
+{
+    printf("\033[F");
+    printf("\033[K");
+}
+
+void delete_lines_by_errors(bool was_last_entry_invalid)
+{
+    if (was_last_entry_invalid) delete_last_line();
+    delete_last_line();
 }
 
 /*
