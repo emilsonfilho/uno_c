@@ -161,7 +161,7 @@ void show_home_screen();
  */
 void show_main_menu_screen();
 
-void show_new_game_screen(Card *deck, int *deck_size);
+void show_new_game_screen();
 
 /**
  * @brief Displays the rules screen of the UNO_C program.
@@ -261,14 +261,12 @@ char **reverse(char **arr, int len);
 /**
  * @brief Retrieves a random normal card from the deck and removes it from the deck.
  *
- * @param deck A pointer to the array of cards.
- * @param deck_size A pointer to the size of the deck (number of elements).
  * @return The selected card that is removed from the deck.
  *
  * @note If no matching card is found, the function terminates with an error message.
  */
 
-Card get_card_for_table(Card **deck, int *deck_size);
+Card get_card_for_table();
 
 /**
  * @brief Retrieves the name associated with the given color.
@@ -431,17 +429,13 @@ char *int_between_parenthesis(int number);
 /**
  * Retrieves player cards from a deck, removing them from the deck.
  *
- * @param deck      Pointer to a pointer to an array of Card structures representing the deck.
- *                  Upon returning, this pointer is updated to reflect the compacted deck.
- * @param deck_size Pointer to an integer representing the current size of the deck.
- *                  Upon returning, this value is updated to reflect the reduced size of the deck.
  * @return          Pointer to an array of Card structures representing the player's cards.
  *                  Memory is dynamically allocated for this array. The caller is responsible for freeing
  *                  this memory when no longer needed.
  *
  * @note Memory is allocated for the player's card array dynamically.
  */
-Card *get_player_cards(Card **deck, int *deck_size);
+Card *get_player_cards();
 
 /**
  * Removes an element from an array of Card structures and compacts the array.
@@ -499,17 +493,21 @@ void print_oponent_cards(int num_cards);
 void print_player_cards(Card *cards, int num_cards);
 void play_card(Card **cards, int *cards_size, Card *top_card);
 void delete_last_line();
+void delete_lines_by_errors(bool was_last_entry_invalid);
+void show_game_screen(char **history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card);
 
-void print_strs(char **matrix, int rows);
+    void print_strs(char **matrix, int rows);
 
 int state = HOME;
+Card *deck;
+int deck_size;
 
 int main()
 {
     run_tests();
 
-    Card *deck = create_deck();
-    int deck_size = MAX_CARDS;
+    deck = create_deck();
+    deck_size = MAX_CARDS;
 
     while (state != EXIT)
     {
@@ -522,7 +520,7 @@ int main()
             show_main_menu_screen();
             break;
         case NEW_GAME:
-            show_new_game_screen(deck, &deck_size);
+            show_new_game_screen();
             break;
         case RULES:
             show_rules_screen();
@@ -1074,20 +1072,20 @@ void show_main_menu_screen()
     }
 }
 
-void show_new_game_screen(Card *deck, int *deck_size)
+void show_new_game_screen()
 {
     clear_input_buffer();
 
     char **history = NULL;
     int history_size = 0, num_cards_player = INITIAL_NUMBER_CARDS, num_cards_oponent = INITIAL_NUMBER_CARDS;
-    Card *player_cards = get_player_cards(&deck, deck_size);
-    Card *oponent_cards = get_player_cards(&deck, deck_size);
+    Card *player_cards = get_player_cards();
+    Card *oponent_cards = get_player_cards();
     sort_cards(oponent_cards, INITIAL_NUMBER_CARDS);
     sort_cards(player_cards, INITIAL_NUMBER_CARDS);
 
     history = push_history(history, &history_size, "Pegando carta inicial...");
 
-    Card top_card = get_card_for_table(&deck, deck_size);
+    Card top_card = get_card_for_table();
 
     print_game(history, history_size, top_card, 0, player_cards, 0);
 
@@ -1098,7 +1096,7 @@ void show_new_game_screen(Card *deck, int *deck_size)
         print_game(history, history_size, top_card, i, player_cards, i);
     }
 
-    play_card(&player_cards, &num_cards_player, &top_card);
+    show_game_screen(history, &history_size, player_cards, &num_cards_player, oponent_cards, &num_cards_oponent, &top_card);
 
     free(history);
     free(player_cards);
@@ -1309,16 +1307,16 @@ void print_line_with_prefix(char *prefix, const char *color_card, const char *an
 }
 
 // When this function is called, the deck size will always be equivalent to the maximum card size
-Card get_card_for_table(Card **deck, int *deck_size)
+Card get_card_for_table()
 {
-    Card filtered[(*deck_size)];
+    Card filtered[deck_size];
     int filtered_size = 0;
 
-    for (int i = 0; i < *deck_size; i++)
+    for (int i = 0; i < deck_size; i++)
     {
-        if (is_normal_card((*deck)[i]))
+        if (is_normal_card(deck[i]))
         {
-            filtered[filtered_size++] = (*deck)[i];
+            filtered[filtered_size++] = deck[i];
         }
     }
 
@@ -1333,9 +1331,9 @@ Card get_card_for_table(Card **deck, int *deck_size)
 
     // Tem que remover a carta da mesa do deck
     int corresponding_index = -1;
-    for (int i = 0; i < *deck_size; i++)
+    for (int i = 0; i < deck_size; i++)
     {
-        Card current_card = (*deck)[i];
+        Card current_card = deck[i];
 
         if ((current_card.color == selected_card.color) && current_card.isNumber && (current_card.numberAction.number == selected_card.numberAction.number))
         {
@@ -1351,7 +1349,7 @@ Card get_card_for_table(Card **deck, int *deck_size)
     }
 
     // Compaction & Left Shifting
-    *deck = compaction(*deck, deck_size, corresponding_index);
+    deck = compaction(deck, &deck_size, corresponding_index);
 
     return selected_card;
 }
@@ -1516,7 +1514,7 @@ char *concat_string(char *str, int *str_size, char *suffix)
     return str;
 }
 
-Card *get_player_cards(Card **deck, int *deck_size)
+Card *get_player_cards()
 {
     Card *player_cards = (Card *)malloc(INITIAL_NUMBER_CARDS * sizeof(Card));
 
@@ -1528,9 +1526,9 @@ Card *get_player_cards(Card **deck, int *deck_size)
 
     for (int i = 0; i < INITIAL_NUMBER_CARDS; i++)
     {
-        int random_index = random_array_index(*deck_size);
-        player_cards[i] = (*deck)[random_index];
-        *deck = compaction(*deck, deck_size, random_index);
+        int random_index = random_array_index(deck_size);
+        player_cards[i] = deck[random_index];
+        deck = compaction(deck, &deck_size, random_index);
     }
 
     return player_cards;
@@ -1712,51 +1710,61 @@ void print_player_cards(Card *cards, int num_cards)
     }
 }
 
-void play_card(Card **cards, int *cards_size, Card *top_card) 
+void play_card(Card **cards, int *cards_size, Card *top_card)
 {
     bool was_valid_play = false, was_last_entry_invalid = false;
     int choice = 0;
-    
-    do {
+
+    do
+    {
         printf("Qual carta você quer jogar? ");
         scanf("%d", &choice);
 
-        if (choice < 1 || choice > *cards_size) {
+        if (choice < 1 || choice > *cards_size)
+        {
             delete_lines_by_errors(was_last_entry_invalid);
             was_last_entry_invalid = true;
 
             printf("Essa carta não está na sua mão, tente novamente.\n");
-        } else if ((*cards)[choice - 1].color != top_card->color) {
-            if (top_card->isNumber) {
-                if ((*cards)[choice - 1].numberAction.number != top_card->numberAction.number) {
-                    delete_lines_by_errors(was_last_entry_invalid);
-                    was_last_entry_invalid = true;
-                    
-                    printf("Essa carta não pode ser jogada.\n");
-                } else {
-                    was_valid_play = true;
-                }
-            } else {
-                if (strcmp((*cards)[choice - 1].numberAction.action, top_card->numberAction.action) != 0) {
+        }
+        else if ((*cards)[choice - 1].color != top_card->color)
+        {
+            if (top_card->isNumber)
+            {
+                if ((*cards)[choice - 1].numberAction.number != top_card->numberAction.number)
+                {
                     delete_lines_by_errors(was_last_entry_invalid);
                     was_last_entry_invalid = true;
 
                     printf("Essa carta não pode ser jogada.\n");
-                } else {
+                }
+                else
+                {
                     was_valid_play = true;
                 }
             }
-        } else {
+            else
+            {
+                if (strcmp((*cards)[choice - 1].numberAction.action, top_card->numberAction.action) != 0)
+                {
+                    delete_lines_by_errors(was_last_entry_invalid);
+                    was_last_entry_invalid = true;
+
+                    printf("Essa carta não pode ser jogada.\n");
+                }
+                else
+                {
+                    was_valid_play = true;
+                }
+            }
+        }
+        else
+        {
             was_valid_play = true;
         }
     } while (!was_valid_play);
 
     *cards = compaction(*cards, cards_size, choice - 1);
-
-    // A carta jogada está sendo retirada de dentro do array
-    print_arr(*cards, *cards_size);
-
-    getchar();
 }
 
 void delete_last_line()
@@ -1767,8 +1775,17 @@ void delete_last_line()
 
 void delete_lines_by_errors(bool was_last_entry_invalid)
 {
-    if (was_last_entry_invalid) delete_last_line();
+    if (was_last_entry_invalid)
+        delete_last_line();
     delete_last_line();
+}
+
+void show_game_screen(char **history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card)
+{
+    print_game(history, *history_size, *top_card, *num_oponent_cards, player_cards, *num_player_cards);
+    play_card(&player_cards, num_player_cards, top_card);
+    show_game_screen(history, history_size, player_cards, num_player_cards, oponent_cards, num_oponent_cards, top_card);
+    getchar();
 }
 
 /*
