@@ -491,12 +491,24 @@ char **str_compaction(char **arr, int *arr_size, int hole);
 char **copy_and_reverse(char **messages, int messages_length);
 void print_oponent_cards(int num_cards);
 void print_player_cards(Card *cards, int num_cards);
-void play_card(Card **cards, int *cards_size, Card *top_card);
+Card play_card(Card **cards, int *cards_size, Card *top_card);
 void delete_last_line();
 void delete_lines_by_errors(bool was_last_entry_invalid);
-void show_game_screen(char **history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card);
+void show_game_screen(char ***history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card);
+void print_strs(char **matrix, int rows);
+void update_table(Card *current, Card new_card);
+Card oponent_play(Card **cards, int *num_cards, Card top_card);
 
-    void print_strs(char **matrix, int rows);
+bool is_color_match(Card card1, Card card2);
+bool is_number_match(Card card1, Card card2);
+bool is_action_match(Card card1, Card card2);
+bool is_wild_card(Card card);
+
+void handle_invalid_choice(bool *was_last_entry_invalid, char *message);
+bool can_play_card(Card chosen, Card top_card);
+void check_play(Card card, Color *chosen_color);
+bool is_in_interval(int number, int min, int max);
+void update_history_if_wild(Card top_card, Color chosen_color, char ***history, int *history_size);
 
 int state = HOME;
 Card *deck;
@@ -1096,7 +1108,7 @@ void show_new_game_screen()
         print_game(history, history_size, top_card, i, player_cards, i);
     }
 
-    show_game_screen(history, &history_size, player_cards, &num_cards_player, oponent_cards, &num_cards_oponent, &top_card);
+    show_game_screen(&history, &history_size, player_cards, &num_cards_player, oponent_cards, &num_cards_oponent, &top_card);
 
     free(history);
     free(player_cards);
@@ -1255,6 +1267,7 @@ void print_table(Card top_card)
         numberAction_length = strlen(top_card.numberAction.action);
         numberAction_str = (char *)malloc((numberAction_length + 1) * sizeof(char));
         strncpy(numberAction_str, top_card.numberAction.action, numberAction_length);
+        numberAction_str[numberAction_length] = '\0';
     }
 
     int card_string_length = strlen(color_card) + 1 + numberAction_length + 1;
@@ -1428,8 +1441,10 @@ char **push_history(char **current_history, int *current_size, char *new_message
     }
     else
     {
-        free(current_history[0]);
-        current_history = str_compaction(current_history, current_size, 0);
+        for (int i = 0; i < *current_size; i++)
+        {
+            current_history[i] = current_history[i + 1];
+        }
     }
 
     current_history[*current_size - 1] = (char *)malloc((strlen(new_message) + 1) * sizeof(char));
@@ -1441,6 +1456,7 @@ char **push_history(char **current_history, int *current_size, char *new_message
     }
 
     strcpy(current_history[*current_size - 1], new_message);
+    current_history[*current_size - 1][strlen(new_message)] = '\0';
 
     return current_history;
 }
@@ -1578,7 +1594,7 @@ char **str_compaction(char **arr, int *arr_size, int hole)
     // Desalocar a string na posição 'hole'
     free(arr[hole]);
 
-    for (int i = hole; i < new_size; i++)
+    for (int i = hole; i < new_size - 1; i++)
     {
         arr[i] = arr[i + 1];
     }
@@ -1710,61 +1726,37 @@ void print_player_cards(Card *cards, int num_cards)
     }
 }
 
-void play_card(Card **cards, int *cards_size, Card *top_card)
+Card play_card(Card **cards, int *cards_size, Card *top_card)
 {
     bool was_valid_play = false, was_last_entry_invalid = false;
     int choice = 0;
 
-    do
+    while (!was_valid_play)
     {
         printf("Qual carta você quer jogar? ");
         scanf("%d", &choice);
 
         if (choice < 1 || choice > *cards_size)
         {
-            delete_lines_by_errors(was_last_entry_invalid);
-            was_last_entry_invalid = true;
-
-            printf("Essa carta não está na sua mão, tente novamente.\n");
-        }
-        else if ((*cards)[choice - 1].color != top_card->color)
-        {
-            if (top_card->isNumber)
-            {
-                if ((*cards)[choice - 1].numberAction.number != top_card->numberAction.number)
-                {
-                    delete_lines_by_errors(was_last_entry_invalid);
-                    was_last_entry_invalid = true;
-
-                    printf("Essa carta não pode ser jogada.\n");
-                }
-                else
-                {
-                    was_valid_play = true;
-                }
-            }
-            else
-            {
-                if (strcmp((*cards)[choice - 1].numberAction.action, top_card->numberAction.action) != 0)
-                {
-                    delete_lines_by_errors(was_last_entry_invalid);
-                    was_last_entry_invalid = true;
-
-                    printf("Essa carta não pode ser jogada.\n");
-                }
-                else
-                {
-                    was_valid_play = true;
-                }
-            }
+            handle_invalid_choice(&was_last_entry_invalid, "Esta carta não está na sua mão.");
         }
         else
         {
-            was_valid_play = true;
+            Card chosen_card = (*cards)[choice - 1];
+            if (can_play_card(chosen_card, *top_card))
+            {
+                was_valid_play = true;
+            }
+            else
+            {
+                handle_invalid_choice(&was_last_entry_invalid, "Essa carta não pode ser jogada.");
+            }
         }
-    } while (!was_valid_play);
+    };
 
+    Card selected_card = (*cards)[choice - 1];
     *cards = compaction(*cards, cards_size, choice - 1);
+    return selected_card;
 }
 
 void delete_last_line()
@@ -1780,16 +1772,148 @@ void delete_lines_by_errors(bool was_last_entry_invalid)
     delete_last_line();
 }
 
-void show_game_screen(char **history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card)
+void show_game_screen(char ***history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card)
 {
-    print_game(history, *history_size, *top_card, *num_oponent_cards, player_cards, *num_player_cards);
-    play_card(&player_cards, num_player_cards, top_card);
+    Color chosen_color;
+
+    print_game(*history, *history_size, *top_card, *num_oponent_cards, player_cards, *num_player_cards);
+
+    Card played_card = play_card(&player_cards, num_player_cards, top_card);
+    check_play(played_card, &chosen_color);
+    update_table(top_card, played_card);
+
+    *history = push_history(*history, history_size, "Voce jogou uma carta");
+    update_history_if_wild(*top_card, chosen_color, history, history_size);
+    // *history = push_history(*history, history_size, "teste");
+
+    Card oponent_played_card = oponent_play(&oponent_cards, num_oponent_cards, *top_card);
+
     show_game_screen(history, history_size, player_cards, num_player_cards, oponent_cards, num_oponent_cards, top_card);
+
     getchar();
 }
 
+void update_table(Card *current, Card new_card)
+{
+    *current = new_card;
+}
+
+Card oponent_play(Card **cards, int *num_cards, Card top_card)
+{
+    for (int i = 0; i < *num_cards; i++)
+    {
+        Card current_card = (*cards)[i];
+        if (
+            is_color_match(current_card, top_card) ||
+            is_number_match(current_card, top_card) ||
+            is_action_match(current_card, top_card) ||
+            is_wild_card(current_card))
+        {
+            *cards = compaction(*cards, num_cards, i);
+            return current_card;
+        }
+    }
+}
+
+bool is_color_match(Card card1, Card card2)
+{
+    return card1.color == card2.color;
+}
+
+bool is_number_match(Card card1, Card card2)
+{
+    return card1.isNumber && card2.isNumber && card1.numberAction.number == card2.numberAction.number;
+}
+
+bool is_action_match(Card card1, Card card2)
+{
+    return !card1.isNumber && !card2.isNumber && strcmp(card1.numberAction.action, card2.numberAction.action) == 0;
+}
+
+bool is_wild_card(Card card)
+{
+    return card.color == WILD;
+}
+
+void handle_invalid_choice(bool *was_last_entry_invalid, char *message)
+{
+    delete_lines_by_errors(*was_last_entry_invalid);
+    *was_last_entry_invalid = true;
+    printf("%s\n", message);
+}
+
+bool can_play_card(Card chosen, Card top_card)
+{
+    if (
+        is_color_match(chosen, top_card) ||
+        is_number_match(chosen, top_card) ||
+        is_action_match(chosen, top_card) ||
+        is_wild_card(chosen))
+    {
+        return true;
+    }
+
+    return false;
+}
+
+void check_play(Card card, Color *chosen_color)
+{
+    if (is_wild_card(card))
+    {
+        bool was_last_entry_invalid = false, was_valid_play = false;
+        int selected_color = 0;
+
+        while (!was_valid_play)
+        {
+            printf("Qual cor você escolhe?\n");
+            printf("[1] Vermelho\n");
+            printf("[2] Verde\n");
+            printf("[3] Azul\n");
+            printf("[4] Amarelo\n");
+            scanf("%d", &selected_color);
+
+            if (is_in_interval(selected_color, 1, 4))
+            {
+                *chosen_color = (Color)(selected_color - 1);
+                was_valid_play = true;
+            }
+            else
+            {
+                handle_invalid_choice(&was_last_entry_invalid, "Essa não é uma cor válida!");
+            }
+        }
+    }
+    else
+    {
+        // If it's not a special card, the color chosen is the same as the card
+        *chosen_color = card.color;
+    }
+}
+
+bool is_in_interval(int number, int min, int max)
+{
+    return min <= number && number <= max;
+}
+
+void update_history_if_wild(Card top_card, Color chosen_color, char ***history, int *history_size)
+{
+    if (is_wild_card(top_card))
+    {
+        char *preffix = "Você escolheu a cor:";
+        char *color_name = get_color_name(chosen_color);
+        int message_size = strlen(preffix) + strlen(color_name) + 2;
+        char *message = malloc(message_size * sizeof(char));
+        sprintf(message, "%s %s\n", preffix, color_name);
+
+        *history = push_history(*history, history_size, message);
+
+        free(message);
+    }
+}
+
 /*
- * PENDÊNCIAS
- * [o] - Escreva os testes unitários para as funções que precisarem
- * [] - Faça as documentações das funções
+ * Cartas de +2 e +4 estão sendo exibidas de modo errônea no terminal
+ * Após printado o action das cartas, não aparece nada incomum
+ * O problema, então, não é na definição das cartas
+ * O problema pode ser na exibição na função que exibe essa carta
  */
