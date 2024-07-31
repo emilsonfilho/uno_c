@@ -1899,11 +1899,11 @@ void update_history_if_wild(Card top_card, Color chosen_color, char ***history, 
 {
     if (is_wild_card(top_card))
     {
-        char *preffix = "Você escolheu a cor:";
+        char *preffix = "Voce escolheu a cor:";
         char *color_name = get_color_name(chosen_color);
         int message_size = strlen(preffix) + strlen(color_name) + 2;
         char *message = malloc(message_size * sizeof(char));
-        sprintf(message, "%s %s\n", preffix, color_name);
+        sprintf(message, "%s %s", preffix, color_name);
 
         *history = push_history(*history, history_size, message);
 
