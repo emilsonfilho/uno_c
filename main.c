@@ -517,7 +517,6 @@ Card play_card(Card **cards, int *cards_size, Card *top_card, Color chosen_color
 void delete_last_line();
 void delete_lines_by_errors(bool was_last_entry_invalid);
 void show_game_screen(char ***history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card, Color *chosen_color);
-void print_strs(char **matrix, int rows);
 void update_table(Card *current, Card new_card, bool played);
 Card oponent_play(Card **cards, int *num_cards, Card top_card, Color chosen_color, bool *oponent_played);
 
@@ -539,29 +538,9 @@ Card *push_card(Card *cards, int *size, Card new_card);
 Card draw_card();
 void initialize_random();
 
+void check_winner(int num_cards, bool is_player);
+void play_again_choose();
 
-
-// Function to print details of a single card
-void print_card_loop(const Card* card) {
-    if (card->isNumber) {
-        printf("Card - Color: %s, Number: %u\n", color_mapper[card->color], card->numberAction.number);
-    } else {
-        printf("Card - Color: %s, Action: %s\n", color_mapper[card->color], card->numberAction.action);
-    }
-}
-
-// Function to print details of an array of cards
-void print_cards(const Card* cards, int size) {
-    printf("Cards in array:\n");
-    for (int i = 0; i < size; i++) {
-        print_card_loop(&cards[i]);
-    }
-}
-
-
-
-
-void print_str_arr(char **arr, int size);
 
 int state = HOME;
 Card *deck;
@@ -2516,14 +2495,6 @@ void sort_cards(Card *arr, int n)
     }
 }
 
-void print_strs(char **matrix, int rows)
-{
-    for (int i = 0; i < rows; i++)
-    {
-        printf("%s\n", matrix[i]);
-    }
-}
-
 void print_oponent_cards(int num_cards)
 {
     char *oponent_hand = (char *)malloc((2 * num_cards + 3) * sizeof(char));
@@ -2656,11 +2627,15 @@ void show_game_screen(char ***history, int *history_size, Card *player_cards, in
     update_table(top_card, played_card, player_played);
     update_history(*top_card, *chosen_color, history, history_size, true, player_played);
 
+    check_winner(*num_player_cards, true);
+
     bool oponent_played = false;
     Card oponent_played_card = oponent_play(&oponent_cards, num_oponent_cards, *top_card, *chosen_color, &oponent_played);
     check_oponent_play(oponent_played_card, chosen_color, oponent_played);
     update_table(top_card, oponent_played_card, oponent_played);
     update_history(*top_card, *chosen_color, history,  history_size, false, oponent_played);
+
+    check_winner(*num_oponent_cards, false);
 
     show_game_screen(history, history_size, player_cards, num_player_cards, oponent_cards, num_oponent_cards, top_card, chosen_color);
 
@@ -2858,18 +2833,20 @@ void initialize_random() {
     srand(time(NULL));
 }
 
-void print_str_arr(char **arr, int arr_size) {
-    if (arr == NULL || arr_size <= 0) {
-        printf("Array is empty or NULL.\n");
-        return;
+void check_winner(int num_cards, bool is_player)
+{
+    if (num_cards == 0) {
+        printf("%s\n", is_player ? "Parabens! Voce ganhou" : "Voce perdeu...");
+        play_again_choose();
     }
 
-    printf("Array of strings (%d elements):\n", arr_size);
-    for (int i = 0; i < arr_size; i++) {
-        if (arr[i] != NULL) {
-            printf("[%d]: %s\n", i, arr[i]);
-        } else {
-            printf("[%d]: NULL\n", i);
-        }
-    }
+}
+
+void play_again_choose()
+{
+    printf("Deseja jogar novamente? [s/n] ");
+    // ...
+    char choice = 's';
+    scanf("%c", &choice);
+    getchar();
 }
