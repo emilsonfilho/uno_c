@@ -2844,6 +2844,8 @@ void check_winner(int num_cards, bool is_player)
 
 void play_again_choose()
 {
+    clear_input_buffer();
+
     printf("Deseja jogar novamente? [s/n] ");
     // ...
     char choice = 's';
