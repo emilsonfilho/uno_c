@@ -18,7 +18,7 @@
     {                                                                                             \
         printf("ERROR: Teste %d falhou. Esperado: %p, Obtido: %p\n", test_num, expected, actual); \
         exit(1);                                                                                  \
-    }                                                                                             \
+    }
 
 #define TEST_ASSERT_EQUAL_STR(expected, actual, test_num)                                                 \
     if (strcmp(expected, actual) != 0)                                                                    \
@@ -26,20 +26,20 @@
         printf("ERROR: Teste %d falhou. Esperado: \"%s\", Obtido: \"%s\"\n", test_num, expected, actual); \
         exit(1);                                                                                          \
     }
-   
-#define TEST_ASSERT_ARRAYS_EQUAL(expected, expected_len, actual, actual_len, test_num)                     \
-    if (!are_arrays_equal(expected, expected_len, actual, actual_len))                                     \
-    {                                                                                                      \
-        printf("ERROR: Teste %d falhou. Arrays não são iguais.\n", test_num);                              \
-        exit(1);                                                                                           \
-    }    
 
-#define TEST_ASSERT_CARD_ARRAYS_EQUAL(expected, expected_len, actual, actual_len, test_num)                     \
-    if (!are_card_arrays_equal(expected, expected_len, actual, actual_len))                                     \
-    {                                                                                                      \
-        printf("ERROR: Teste %d falhou. Arrays não são iguais.\n", test_num);                              \
-        exit(1);                                                                                           \
-    }    
+#define TEST_ASSERT_ARRAYS_EQUAL(expected, expected_len, actual, actual_len, test_num) \
+    if (!are_arrays_equal(expected, expected_len, actual, actual_len))                 \
+    {                                                                                  \
+        printf("ERROR: Teste %d falhou. Arrays não são iguais.\n", test_num);          \
+        exit(1);                                                                       \
+    }
+
+#define TEST_ASSERT_CARD_ARRAYS_EQUAL(expected, expected_len, actual, actual_len, test_num) \
+    if (!are_card_arrays_equal(expected, expected_len, actual, actual_len))                 \
+    {                                                                                       \
+        printf("ERROR: Teste %d falhou. Arrays não são iguais.\n", test_num);               \
+        exit(1);                                                                            \
+    }
 
 #define MAX_CARDS 108
 #define TRANSITION_TIME 1000
@@ -259,7 +259,7 @@ void stylized_print(char *message, int n, ...);
 void print_bold(char *message);
 
 void print_arr(Card *arr, int size);
-void print_game(char **messages, int messages_length, Card top_card, int num_oponent_cards, Card *player_cards, int num_player_cards);
+void print_game(char **messages, int messages_length, Card top_card, int num_opponent_cards, Card *player_cards, int num_player_cards);
 void print_history(char **messages, int messages_length);
 void print_table(Card top_card);
 void print_line();
@@ -387,11 +387,11 @@ char **push_history(char **current_history, int *current_size, char *new_message
  * enclosed in brackets, while the player's hand displays each card's color and either
  * a number or action associated with it.
  *
- * @param num_oponent_cards The number of cards held by the opponent.
+ * @param num_opponent_cards The number of cards held by the opponent.
  * @param player_cards      Array of Card structs representing the player's cards.
  * @param num_player_cards  The number of cards held by the player.
  */
-void print_hands(int num_oponent_cards, Card *player_cards, int num_player_cards);
+void print_hands(int num_opponent_cards, Card *player_cards, int num_player_cards);
 
 /**
  * Counts the number of digits in a given integer number.
@@ -511,14 +511,14 @@ void swap(Card *arr, int i, int j);
 void sort_cards(Card *arr, int n);
 
 char **str_compaction(char **arr, int *arr_size, int hole);
-void print_oponent_cards(int num_cards);
+void print_opponent_cards(int num_cards);
 void print_player_cards(Card *cards, int num_cards);
-Card play_card(Card **cards, int *cards_size, Card *top_card, Color chosen_color, bool *player_played);
+Card play_card(Card **cards, int *cards_size, Card *top_card, Color chosen_color, bool *player_played, bool player_skipped);
 void delete_last_line();
 void delete_lines_by_errors(bool was_last_entry_invalid);
-void show_game_screen(char ***history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card, Color *chosen_color);
+void show_game_screen(char ***history, int *history_size, Card *player_cards, int *num_player_cards, Card *opponent_cards, int *num_opponent_cards, Card *top_card, Color *chosen_color, bool *player_skipped, bool *opponent_skipped, bool *player_drawed, bool *opponent_drawed);
 void update_table(Card *current, Card new_card, bool played);
-Card oponent_play(Card **cards, int *num_cards, Card top_card, Color chosen_color, bool *oponent_played);
+Card opponent_play(Card **cards, int *num_cards, Card top_card, Color chosen_color, bool *opponent_played, bool opponent_skipped);
 
 bool is_color_match(Card card1, Card card2);
 bool is_number_match(Card card1, Card card2);
@@ -529,18 +529,19 @@ bool is_in_interval(int number, int min, int max);
 
 void handle_invalid_choice(bool *was_last_entry_invalid, char *message);
 bool can_play_card(Card chosen, Card top_card, Color chosen_color);
-void check_play(Card card, Color *chosen_color, bool player_played);
-void update_history(Card top_card, Color chosen_color, char ***history, int *history_size, bool is_player, bool played);
-void check_oponent_play(Card card, Color *chosen_color, bool oponent_played);
-void print_card(Card card);
-void print_opponent(Card *cards, int num_cards);
+void check_play(Card card, Color *chosen_color, bool player_played, bool *opponent_skip, Card **opponent_cards, int *num_opponent_cards, bool *opponent_draws);
+void update_history(Card top_card, Color chosen_color, char ***history, int *history_size, bool is_player, bool played, bool skipped, bool drawed);
+void check_opponent_play(Card card, Color *chosen_color, bool opponent_played, bool *player_skip, Card **player_cards, int *num_player_cards, bool *player_draws);
 Card *push_card(Card *cards, int *size, Card new_card);
 Card draw_card();
 void initialize_random();
 
 void check_winner(int num_cards, bool is_player);
 void play_again_choose();
-
+bool are_strings_equal(char *str1, char *str2);
+bool card_skip_next_player(Card card);
+bool is_colored_draw_card(Card card);
+void add_cards_to_other_player(Card** cards, int *num_cards, int num_cards_to_add);
 
 int state = HOME;
 Card *deck;
@@ -825,7 +826,7 @@ void run_tests()
                 else
                 {
                     // These are action cards
-                    if (strcmp(card_expected.numberAction.action, card_result.numberAction.action) != 0)
+                    if (!are_strings_equal(card_expected.numberAction.action, card_result.numberAction.action))
                     {
                         show_card_error_message("Carta não correspondente pela ação", card_expected, card_result);
                     }
@@ -1028,7 +1029,7 @@ void run_tests()
     bool result_color_exceeding_test = is_invalid_color(5);
     TEST_ASSERT_EQUAL(expected_color_exceeding_test, result_color_exceeding_test, num_tests);
     num_tests++;
-    
+
     // Remove an element from the middle of the array
     int size_middle = 5;
     Card *array_middle = (Card *)malloc(size_middle * sizeof(Card));
@@ -1118,19 +1119,21 @@ void run_tests()
     char **str_compaction_result_empty = str_compaction(str_compaction_array_empty, &str_compaction_size_empty, str_compaction_hole_empty);
     TEST_ASSERT_EQUAL(0, str_compaction_size_empty, num_tests);
     TEST_ASSERT_EQUAL_PTR(NULL, str_compaction_result_empty, num_tests);
-    num_tests++; 
+    num_tests++;
 
     // Handle the case when the hole index is invalid (greater than size)
     int str_compaction_size_invalid = 3;
     char **str_compaction_array_invalid = malloc(str_compaction_size_invalid * sizeof(char *));
-    for (int i = 0; i < str_compaction_size_invalid; i++) {
+    for (int i = 0; i < str_compaction_size_invalid; i++)
+    {
         str_compaction_array_invalid[i] = strdup("test");
     }
     int str_compaction_hole_invalid = 5; // Invalid index
     char **str_compaction_result_invalid = str_compaction(str_compaction_array_invalid, &str_compaction_size_invalid, str_compaction_hole_invalid);
     TEST_ASSERT_EQUAL(3, str_compaction_size_invalid, num_tests);
     TEST_ASSERT_EQUAL_PTR(str_compaction_array_invalid, str_compaction_result_invalid, num_tests);
-    for (int i = 0; i < str_compaction_size_invalid; i++) {
+    for (int i = 0; i < str_compaction_size_invalid; i++)
+    {
         free(str_compaction_array_invalid[i]);
     }
     free(str_compaction_array_invalid);
@@ -1139,14 +1142,15 @@ void run_tests()
     // Handle the case when the hole index is within bounds
     int str_compaction_size_valid = 3;
     char **str_compaction_array_valid = malloc(str_compaction_size_valid * sizeof(char *));
-    for (int i = 0; i < str_compaction_size_valid; i++) {
+    for (int i = 0; i < str_compaction_size_valid; i++)
+    {
         str_compaction_array_valid[i] = strdup("test");
     }
 
-
     int str_compaction_hole_valid = 1;
     char **str_compaction_expected_result_valid = malloc((str_compaction_size_valid - 1) * sizeof(char *));
-    for (int i = 0; i < str_compaction_size_valid - 1; i++) {
+    for (int i = 0; i < str_compaction_size_valid - 1; i++)
+    {
         str_compaction_expected_result_valid[i] = strdup("test");
     }
 
@@ -1154,11 +1158,13 @@ void run_tests()
 
     TEST_ASSERT_EQUAL(2, str_compaction_size_valid, num_tests);
     TEST_ASSERT_ARRAYS_EQUAL((const char **)str_compaction_expected_result_valid, 2, (const char **)str_compaction_array_valid, 2, num_tests);
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++)
+    {
         free(str_compaction_expected_result_valid[i]);
     }
     free(str_compaction_expected_result_valid);
-    for (int i = 0; i < str_compaction_size_valid; i++) {
+    for (int i = 0; i < str_compaction_size_valid; i++)
+    {
         free(str_compaction_array_valid[i]);
     }
     free(str_compaction_array_valid);
@@ -1174,7 +1180,7 @@ void run_tests()
     TEST_ASSERT_EQUAL_PTR(NULL, str_compaction_array_single, num_tests);
     free(str_compaction_array_single);
     num_tests++;
-    
+
     // get_card_for_table test
     deck_size = 5;
     deck = (Card *)malloc(deck_size * sizeof(Card));
@@ -1201,10 +1207,10 @@ void run_tests()
             return;
         }
     }
-    
+
     num_tests++;
     free(deck);
-    
+
     // Equal arrays
     const char *test1_arr1[] = {"hello", "world"};
     const char *test1_arr2[] = {"hello", "world"};
@@ -1236,7 +1242,7 @@ void run_tests()
     const char **test4_arr2 = NULL;
     TEST_ASSERT_ARRAYS_EQUAL(test4_arr1, 0, test4_arr2, 0, num_tests + 1);
     num_tests++;
-    
+
     char **test_history = NULL;
     int test_size = 0;
 
@@ -1251,7 +1257,7 @@ void run_tests()
     const char *expected2[] = {"msg1", "msg2"};
     TEST_ASSERT_ARRAYS_EQUAL(expected2, 2, (const char **)test_history, test_size, num_tests + 1);
     num_tests++;
-        
+
     // get_card_for_table test
     deck_size = 5;
     deck = (Card *)malloc(deck_size * sizeof(Card));
@@ -1278,10 +1284,10 @@ void run_tests()
             return;
         }
     }
-    
+
     num_tests++;
     free(deck);
-    
+
     // Equal arrays
     const char *equal_test1_arr1[] = {"hello", "world"};
     const char *equal_test1_arr2[] = {"hello", "world"};
@@ -1313,7 +1319,7 @@ void run_tests()
     const char **equal_test4_arr2 = NULL;
     TEST_ASSERT_ARRAYS_EQUAL(equal_test4_arr1, 0, equal_test4_arr2, 0, num_tests + 1);
     num_tests++;
-    
+
     char **push_history_test_history = NULL;
     int push_history_test_size = 0;
 
@@ -1340,21 +1346,21 @@ void run_tests()
     const char *push_history_expected4[] = {"msg2", "msg3", "msg4"};
     TEST_ASSERT_ARRAYS_EQUAL(push_history_expected4, 3, (const char **)push_history_test_history, push_history_test_size, num_tests + 1);
     num_tests++;
-    
+
     // Free memory
     for (int i = 0; i < push_history_test_size; i++)
     {
         free(push_history_test_history[i]);
     }
     free(push_history_test_history);
-    
+
     // Free memory
     for (int i = 0; i < test_size; i++)
     {
         free(test_history[i]);
     }
     free(test_history);
-    
+
     // Testing zero
     int result1 = count_digits(0);
     TEST_ASSERT_EQUAL(1, result1, num_tests + 1);
@@ -1379,7 +1385,7 @@ void run_tests()
     int result5 = count_digits(1000);
     TEST_ASSERT_EQUAL(4, result5, num_tests + 1);
     num_tests++;
-    
+
     // Test case for zero
     char *result_zero = int_to_string(0);
     const char *expected_zero = "0";
@@ -1414,7 +1420,7 @@ void run_tests()
     TEST_ASSERT_EQUAL_STR(expected_large_number, result_large_number, num_tests + 1);
     free(result_large_number);
     num_tests++;
-    
+
     // Test case for appending to an empty string
     char *str_empty = (char *)malloc(2 * sizeof(char)); // Initial size 1 + 1 for null terminator
     str_empty[0] = '\0';
@@ -1444,7 +1450,7 @@ void run_tests()
     TEST_ASSERT_EQUAL_STR(expected_large, result_large, num_tests + 1);
     free(str_large);
     num_tests++;
-    
+
     // Test case for appending an empty string to an empty string
     char *str_empty_empty = (char *)malloc(1 * sizeof(char)); // Initial size 0 + 1 for null terminator
     str_empty_empty[0] = '\0';
@@ -1484,7 +1490,7 @@ void run_tests()
     TEST_ASSERT_EQUAL_STR(expected_with_spaces, result_with_spaces, num_tests + 1);
     free(str_with_spaces);
     num_tests++;
-    
+
     // Single-digit positive number
     char *result_single_digit_test = int_between_parenthesis(5);
     const char *expected_single_digit_test = "(5) ";
@@ -1523,7 +1529,7 @@ void run_tests()
     // Valid swap test
     int arr_size = 3;
     Card *card_array = malloc(arr_size * sizeof(Card));
-    
+
     card_array[0].color = RED;
     card_array[0].numberAction.number = 1;
     card_array[0].isNumber = true;
@@ -1539,9 +1545,9 @@ void run_tests()
     swap(card_array, 0, 2);
 
     // Assertion
-    TEST_ASSERT_EQUAL(3, card_array[0].numberAction.number, num_tests);  // Esperado 3
-    TEST_ASSERT_EQUAL(2, card_array[1].numberAction.number, num_tests);  // Esperado 2
-    TEST_ASSERT_EQUAL(1, card_array[2].numberAction.number, num_tests);  // Esperado 1
+    TEST_ASSERT_EQUAL(3, card_array[0].numberAction.number, num_tests); // Esperado 3
+    TEST_ASSERT_EQUAL(2, card_array[1].numberAction.number, num_tests); // Esperado 2
+    TEST_ASSERT_EQUAL(1, card_array[2].numberAction.number, num_tests); // Esperado 1
     num_tests++;
 
     // Memory free
@@ -1573,8 +1579,7 @@ void run_tests()
         {GREEN, .numberAction.number = 3, .isNumber = true},
         {GREEN, .numberAction.action = "A", .isNumber = false},
         {BLUE, .numberAction.number = 5, .isNumber = true},
-        {BLUE, .numberAction.action = "B", .isNumber = false}
-    };
+        {BLUE, .numberAction.action = "B", .isNumber = false}};
 
     sort_cards(sort_cards_array, sort_cards_size);
 
@@ -1739,11 +1744,11 @@ void run_tests()
     num_tests++;
 
     // Define some cards for testing
-    Card card_red_5 = { RED, { .number = 5 }, true };
-    Card card_green_5 = { GREEN, { .number = 5 }, true };
-    Card card_red_block = { RED, { .action = "block" }, false };
-    Card card_wild_change = { WILD, { .action = "change" }, false };
-    Card card_wild_draw_four = { WILD, { .action = "+4" }, false };
+    Card card_red_5 = {RED, {.number = 5}, true};
+    Card card_green_5 = {GREEN, {.number = 5}, true};
+    Card card_red_block = {RED, {.action = "block"}, false};
+    Card card_wild_change = {WILD, {.action = "change"}, false};
+    Card card_wild_draw_four = {WILD, {.action = "+4"}, false};
 
     // Test matching colors
     TEST_ASSERT_EQUAL(true, can_play_card(card_red_5, card_green_5, RED), num_tests);
@@ -1783,17 +1788,17 @@ void run_tests()
 
     // Test matching wild draw four card
     TEST_ASSERT_EQUAL(true, can_play_card(card_wild_draw_four, card_wild_draw_four, GREEN), num_tests);
-    num_tests++;    
+    num_tests++;
 
     // Initial setup for testing
     int size = 0;
     Card *cards = NULL;
 
     // Define some cards for testing
-    Card push_test_card_red_5 = { RED, { .number = 5 }, true };
-    Card push_test_card_green_5 = { GREEN, { .number = 5 }, true };
-    Card push_test_card_blue_7 = { BLUE, { .number = 7 }, true };
-    Card push_test_card_red_skip = { RED, { .action = "block" }, false };
+    Card push_test_card_red_5 = {RED, {.number = 5}, true};
+    Card push_test_card_green_5 = {GREEN, {.number = 5}, true};
+    Card push_test_card_blue_7 = {BLUE, {.number = 7}, true};
+    Card push_test_card_red_skip = {RED, {.action = "block"}, false};
 
     // Test adding a single card
     cards = push_card(cards, &size, push_test_card_red_5);
@@ -1803,21 +1808,21 @@ void run_tests()
 
     // Test adding another card and sorting
     cards = push_card(cards, &size, push_test_card_blue_7);
-    Card sorted_cards_2[] = { push_test_card_red_5, push_test_card_blue_7 };
+    Card sorted_cards_2[] = {push_test_card_red_5, push_test_card_blue_7};
     TEST_ASSERT_EQUAL(2, size, num_tests);
     TEST_ASSERT_CARD_ARRAYS_EQUAL(sorted_cards_2, 2, cards, 2, num_tests);
     num_tests++;
 
     // Test adding a card with the same color but different number
     cards = push_card(cards, &size, push_test_card_green_5);
-    Card sorted_cards_3[] = { push_test_card_red_5, push_test_card_green_5, push_test_card_blue_7 };
+    Card sorted_cards_3[] = {push_test_card_red_5, push_test_card_green_5, push_test_card_blue_7};
     TEST_ASSERT_EQUAL(3, size, num_tests);
     TEST_ASSERT_CARD_ARRAYS_EQUAL(sorted_cards_3, 3, cards, 3, num_tests);
     num_tests++;
 
     // Test adding a card with different color and action
     cards = push_card(cards, &size, push_test_card_red_skip);
-    Card sorted_cards_4[] = { push_test_card_red_5, push_test_card_red_skip, push_test_card_green_5, push_test_card_blue_7 };
+    Card sorted_cards_4[] = {push_test_card_red_5, push_test_card_red_skip, push_test_card_green_5, push_test_card_blue_7};
     TEST_ASSERT_EQUAL(4, size, num_tests);
     TEST_ASSERT_CARD_ARRAYS_EQUAL(sorted_cards_4, 4, cards, 4, num_tests);
     num_tests++;
@@ -1916,10 +1921,11 @@ void show_new_game_screen()
 {
     clear_input_buffer();
 
+    bool player_skipped = false, opponent_skipped = false, player_drawed = false, opponent_drawed = false;
     char **history = NULL;
-    int history_size = 0, num_cards_player = INITIAL_NUMBER_CARDS, num_cards_oponent = INITIAL_NUMBER_CARDS;
+    int history_size = 0, num_cards_player = INITIAL_NUMBER_CARDS, num_cards_opponent = INITIAL_NUMBER_CARDS;
     Card *player_cards = get_player_cards();
-    Card *oponent_cards = get_player_cards();
+    Card *opponent_cards = get_player_cards();
     Card top_card = get_card_for_table();
     Color chosen_color = top_card.color;
     sort_cards(player_cards, INITIAL_NUMBER_CARDS);
@@ -1935,7 +1941,7 @@ void show_new_game_screen()
         print_game(history, history_size, top_card, i, player_cards, i);
     }
 
-    show_game_screen(&history, &history_size, player_cards, &num_cards_player, oponent_cards, &num_cards_oponent, &top_card, &chosen_color);
+    show_game_screen(&history, &history_size, player_cards, &num_cards_player, opponent_cards, &num_cards_opponent, &top_card, &chosen_color, &player_skipped, &opponent_skipped, &player_drawed, &opponent_drawed);
 
     free(history);
     free(player_cards);
@@ -2064,12 +2070,12 @@ char **reverse(char **arr, int len)
     return reversed_array;
 }
 
-void print_game(char **messages, int messages_length, Card top_card, int num_oponent_cards, Card *player_cards, int num_player_cards)
+void print_game(char **messages, int messages_length, Card top_card, int num_opponent_cards, Card *player_cards, int num_player_cards)
 {
     clear_screen();
     print_history(messages, messages_length);
     print_table(top_card);
-    print_hands(num_oponent_cards, player_cards, num_player_cards);
+    print_hands(num_opponent_cards, player_cards, num_player_cards);
 
     sleep_time(TRANSITION_TIME * 2);
 }
@@ -2239,7 +2245,7 @@ bool are_arrays_equal(const char **arr1, int len1, const char **arr2, int len2)
 
     for (int i = 0; i < len1; i++)
     {
-        if (strcmp(arr1[i], arr2[i]) != 0)
+        if (!are_strings_equal((char *) arr1[i], (char *) arr2[i]))
             return false;
     }
 
@@ -2256,7 +2262,7 @@ bool are_card_arrays_equal(Card *arr1, int len1, Card *arr2, int len2)
         if (arr1[i].color != arr2[i].color ||
             arr1[i].isNumber != arr2[i].isNumber ||
             (arr1[i].isNumber && arr1[i].numberAction.number != arr2[i].numberAction.number) ||
-            (!arr1[i].isNumber && strcmp(arr1[i].numberAction.action, arr2[i].numberAction.action) != 0))
+            (!arr1[i].isNumber && !are_strings_equal(arr1[i].numberAction.action, arr2[i].numberAction.action)))
         {
             return false;
         }
@@ -2307,12 +2313,12 @@ char **push_history(char **current_history, int *current_size, char *new_message
     return current_history;
 }
 
-void print_hands(int num_oponent_cards, Card *player_cards, int num_player_cards)
+void print_hands(int num_opponent_cards, Card *player_cards, int num_player_cards)
 {
-    // Oponent hand
+    // opponent hand
     print_line();
 
-    print_oponent_cards(num_oponent_cards);
+    print_opponent_cards(num_opponent_cards);
     print_player_cards(player_cards, num_player_cards);
 
     print_line();
@@ -2495,26 +2501,26 @@ void sort_cards(Card *arr, int n)
     }
 }
 
-void print_oponent_cards(int num_cards)
+void print_opponent_cards(int num_cards)
 {
-    char *oponent_hand = (char *)malloc((2 * num_cards + 3) * sizeof(char));
-    int current_str_oponent_length = 0;
+    char *opponent_hand = (char *)malloc((2 * num_cards + 3) * sizeof(char));
+    int current_str_opponent_length = 0;
 
-    strcpy(oponent_hand + current_str_oponent_length, "[ ");
-    current_str_oponent_length += 2;
+    strcpy(opponent_hand + current_str_opponent_length, "[ ");
+    current_str_opponent_length += 2;
 
     for (int i = 0; i < num_cards; i++)
     {
-        strcpy(oponent_hand + current_str_oponent_length, "x ");
-        current_str_oponent_length += 2;
+        strcpy(opponent_hand + current_str_opponent_length, "x ");
+        current_str_opponent_length += 2;
     }
 
-    strcpy(oponent_hand + current_str_oponent_length, "]");
-    current_str_oponent_length += 1;
+    strcpy(opponent_hand + current_str_opponent_length, "]");
+    current_str_opponent_length += 1;
 
-    print_line_with_prefix("Oponente: ", oponent_hand, RESET);
+    print_line_with_prefix("Oponente: ", opponent_hand, RESET);
 
-    free(oponent_hand);
+    free(opponent_hand);
 }
 
 void print_player_cards(Card *cards, int num_cards)
@@ -2563,45 +2569,55 @@ void print_player_cards(Card *cards, int num_cards)
     }
 }
 
-Card play_card(Card **cards, int *cards_size, Card *top_card, Color chosen_color, bool *player_played)
+Card play_card(Card **cards, int *cards_size, Card *top_card, Color chosen_color, bool *player_played, bool player_skipped)
 {
     bool was_valid_play = false, was_last_entry_invalid = false;
     int choice = 0;
 
-    while (!was_valid_play)
+    if (!player_skipped)
     {
-        printf("Qual carta você quer jogar? ");
-        scanf("%d", &choice);
+        while (!was_valid_play)
+        {
+            printf("Qual carta você quer jogar? ");
+            scanf("%d", &choice);
 
-        if (choice < 1 || choice > *cards_size)
-        {
-            if (choice == -1) {
-                
-                *cards = push_card(*cards, cards_size, draw_card());
-                *player_played = false;
-                return (Card) { WILD, {.action = ""}, false };
-            }
-            
-            handle_invalid_choice(&was_last_entry_invalid, "Esta carta não está na sua mão.");
-        }
-        else
-        {
-            Card chosen_card = (*cards)[choice - 1];
-            if (can_play_card(chosen_card, *top_card, chosen_color))
+            if (choice < 1 || choice > *cards_size)
             {
-                was_valid_play = true;
+                if (choice == -1)
+                {
+
+                    *cards = push_card(*cards, cards_size, draw_card());
+                    *player_played = false;
+                    return (Card){WILD, {.action = ""}, false};
+                }
+
+                handle_invalid_choice(&was_last_entry_invalid, "Esta carta não está na sua mão.");
             }
             else
             {
-                handle_invalid_choice(&was_last_entry_invalid, "Essa carta não pode ser jogada.");
+                Card chosen_card = (*cards)[choice - 1];
+                if (can_play_card(chosen_card, *top_card, chosen_color))
+                {
+                    was_valid_play = true;
+                }
+                else
+                {
+                    handle_invalid_choice(&was_last_entry_invalid, "Essa carta não pode ser jogada.");
+                }
             }
-        }
-    };
+        };
 
-    Card selected_card = (*cards)[choice - 1];
-    *cards = compaction(*cards, cards_size, choice - 1);
-    *player_played = true;
-    return selected_card;
+        Card selected_card = (*cards)[choice - 1];
+        *cards = compaction(*cards, cards_size, choice - 1);
+        *player_played = true;
+        return selected_card;
+    }
+    else
+    {
+        *player_played = false;
+
+        return (Card){WILD, {.action = ""}, false};
+    }
 }
 
 void delete_last_line()
@@ -2617,52 +2633,64 @@ void delete_lines_by_errors(bool was_last_entry_invalid)
     delete_last_line();
 }
 
-void show_game_screen(char ***history, int *history_size, Card *player_cards, int *num_player_cards, Card *oponent_cards, int *num_oponent_cards, Card *top_card, Color *chosen_color)
+void show_game_screen(char ***history, int *history_size, Card *player_cards, int *num_player_cards, Card *opponent_cards, int *num_opponent_cards, Card *top_card, Color *chosen_color, bool *player_skipped, bool *opponent_skipped, bool *player_drawed, bool *opponent_drawed)
 {
-    print_game(*history, *history_size, *top_card, *num_oponent_cards, player_cards, *num_player_cards);
+    print_game(*history, *history_size, *top_card, *num_opponent_cards, player_cards, *num_player_cards);
 
     bool player_played = true;
-    Card played_card = play_card(&player_cards, num_player_cards, top_card, *chosen_color, &player_played);
-    check_play(played_card, chosen_color, player_played);
+    Card played_card = play_card(&player_cards, num_player_cards, top_card, *chosen_color, &player_played, *player_skipped);
+    check_play(played_card, chosen_color, player_played, opponent_skipped, &opponent_cards, num_opponent_cards, opponent_drawed);
     update_table(top_card, played_card, player_played);
-    update_history(*top_card, *chosen_color, history, history_size, true, player_played);
+    update_history(*top_card, *chosen_color, history, history_size, true, player_played, *player_skipped, *player_drawed);
+    *player_skipped = false;
+    *player_drawed = false;
 
     check_winner(*num_player_cards, true);
 
-    bool oponent_played = false;
-    Card oponent_played_card = oponent_play(&oponent_cards, num_oponent_cards, *top_card, *chosen_color, &oponent_played);
-    check_oponent_play(oponent_played_card, chosen_color, oponent_played);
-    update_table(top_card, oponent_played_card, oponent_played);
-    update_history(*top_card, *chosen_color, history,  history_size, false, oponent_played);
+    bool opponent_played = false;
+    Card opponent_played_card = opponent_play(&opponent_cards, num_opponent_cards, *top_card, *chosen_color, &opponent_played, *opponent_skipped);
+    check_opponent_play(opponent_played_card, chosen_color, opponent_played, player_skipped, &player_cards, num_player_cards, player_drawed);
+    update_table(top_card, opponent_played_card, opponent_played);
+    update_history(*top_card, *chosen_color, history, history_size, false, opponent_played, *opponent_skipped, *opponent_drawed);
+    *opponent_skipped = false;
+    *opponent_drawed = false;
 
-    check_winner(*num_oponent_cards, false);
+    check_winner(*num_opponent_cards, false);
 
-    show_game_screen(history, history_size, player_cards, num_player_cards, oponent_cards, num_oponent_cards, top_card, chosen_color);
+    show_game_screen(history, history_size, player_cards, num_player_cards, opponent_cards, num_opponent_cards, top_card, chosen_color, player_skipped, opponent_skipped, player_drawed, opponent_drawed);
 
     getchar();
 }
 
 void update_table(Card *current, Card new_card, bool played)
 {
-    if (played) *current = new_card;
+    if (played)
+        *current = new_card;
 }
 
-Card oponent_play(Card **cards, int *num_cards, Card top_card, Color chosen_color, bool *oponent_played)
+Card opponent_play(Card **cards, int *num_cards, Card top_card, Color chosen_color, bool *opponent_played, bool opponent_skipped)
 {
-    for (int i = 0; i < *num_cards; i++)
+
+    if (!opponent_skipped)
     {
-        Card current_card = (*cards)[i];
-        if (can_play_card(current_card, top_card, chosen_color))
+        for (int i = 0; i < *num_cards; i++)
         {
-            *cards = compaction(*cards, num_cards, i);
-            *oponent_played = true;
-            return current_card;
+            Card current_card = (*cards)[i];
+            if (can_play_card(current_card, top_card, chosen_color))
+            {
+                *cards = compaction(*cards, num_cards, i);
+                *opponent_played = true;
+                return current_card;
+
+                // Make if statement for when the card to skip the next move
+            }
         }
+
+        *cards = push_card(*cards, num_cards, draw_card());
     }
-    
-    *cards = push_card(*cards, num_cards, draw_card());
-    *oponent_played = false;
-    return (Card) { WILD, {.action = ""}, false };
+
+    *opponent_played = false;
+    return (Card){WILD, {.action = ""}, false};
 }
 
 bool is_color_match(Card card1, Card card2)
@@ -2677,7 +2705,7 @@ bool is_number_match(Card card1, Card card2)
 
 bool is_action_match(Card card1, Card card2)
 {
-    return !card1.isNumber && !card2.isNumber && strcmp(card1.numberAction.action, card2.numberAction.action) == 0;
+    return !card1.isNumber && !card2.isNumber && are_strings_equal(card1.numberAction.action, card2.numberAction.action);
 }
 
 bool is_wild_card(Card card)
@@ -2699,8 +2727,7 @@ bool can_play_card(Card chosen, Card top_card, Color chosen_color)
         is_number_match(chosen, top_card) ||
         is_action_match(chosen, top_card) ||
         is_wild_card(chosen) ||
-        (is_wild_card(top_card) && chosen.color == chosen_color)
-    )
+        (is_wild_card(top_card) && chosen.color == chosen_color))
     {
         return true;
     }
@@ -2708,9 +2735,10 @@ bool can_play_card(Card chosen, Card top_card, Color chosen_color)
     return false;
 }
 
-void check_play(Card card, Color *chosen_color, bool player_played)
+void check_play(Card card, Color *chosen_color, bool player_played, bool *opponent_skip, Card **opponent_cards, int *num_opponent_cards, bool *opponent_draws)
 {
-    if (player_played) {
+    if (player_played)
+    {
         if (is_wild_card(card))
         {
             bool was_last_entry_invalid = false, was_valid_play = false;
@@ -2729,6 +2757,12 @@ void check_play(Card card, Color *chosen_color, bool player_played)
                 {
                     *chosen_color = (Color)(selected_color - 1);
                     was_valid_play = true;
+
+                    // The card can be +4 (which skips the next move)
+                    if (card_skip_next_player(card))
+                    {
+                        *opponent_skip = true;
+                    }
                 }
                 else
                 {
@@ -2740,6 +2774,19 @@ void check_play(Card card, Color *chosen_color, bool player_played)
         {
             // If it's not a special card, the color chosen is the same as the card
             *chosen_color = card.color;
+
+            if (!card.isNumber)
+            {
+                if (card_skip_next_player(card))
+                {
+                    *opponent_skip = true;
+
+                    if (is_colored_draw_card(card)) {
+                        add_cards_to_other_player(opponent_cards, num_opponent_cards, 2);
+                        *opponent_draws = true;
+                    }
+                }
+            }
         }
     }
 }
@@ -2749,12 +2796,13 @@ bool is_in_interval(int number, int min, int max)
     return min <= number && number <= max;
 }
 
-void update_history(Card top_card, Color chosen_color, char ***history, int *history_size, bool is_player, bool played)
+void update_history(Card top_card, Color chosen_color, char ***history, int *history_size, bool is_player, bool played, bool skipped, bool drawed)
 {
-    if (played) {
+    if (played)
+    {
         char *played_message = is_player ? "Voce jogou uma carta" : "Oponente jogou uma carta";
         *history = push_history(*history, history_size, played_message);
-    
+
         if (is_wild_card(top_card))
         {
             char *preffix = is_player ? "Voce escolheu a cor:" : "Oponente escolheu a cor:";
@@ -2767,79 +2815,99 @@ void update_history(Card top_card, Color chosen_color, char ***history, int *his
 
             free(message);
         }
-    } else {
+    }
+    else if (skipped)
+    {
+        if (drawed) {
+            char *message = is_player ? "Voce puxou cartas" : "Oponente puxou cartas";
+            *history = push_history(*history, history_size, message);
+        } else {
+            char *message = is_player ? "Voce foi bloqueado" : "Oponente foi bloqueado";
+            *history = push_history(*history, history_size, message);
+        }
+    }
+    else
+    {
         char *message = is_player ? "Voce puxou uma carta" : "Oponente puxou uma carta";
         *history = push_history(*history, history_size, message);
     }
 }
 
-void check_oponent_play(Card card, Color *chosen_color, bool oponent_played) {
-    if (oponent_played) {
-        if (is_wild_card(card)) {
+void check_opponent_play(Card card, Color *chosen_color, bool opponent_played, bool *player_skip, Card **player_cards, int *num_player_cards, bool *player_draws)
+{
+    if (opponent_played)
+    {
+        if (is_wild_card(card))
+        {
             int random_color = random_array_index(4);
             *chosen_color = random_color;
-        } else {
+
+            if (card_skip_next_player(card))
+            {
+                *player_skip = true;
+            }
+        }
+        else
+        {
             *chosen_color = card.color;
+
+            if (!card.isNumber)
+            {
+                if (card_skip_next_player(card))
+                {
+                    *player_skip = true;
+
+                    if (is_colored_draw_card(card)) {
+                        add_cards_to_other_player(player_cards, num_player_cards, 2);
+                        *player_draws = true;
+                    }
+                }
+            }
         }
     }
 }
 
-void print_card(Card card) {
-    const char *colors[] = { "RED", "GREEN", "BLUE", "YELLOW", "WILD" };
-    printf("Card: color=%s, ", colors[card.color]);
-    if (card.isNumber) {
-        printf("number=%d", card.numberAction.number);
-    } else {
-        printf("action=%s", card.numberAction.action);
-    }
-    printf(", isNumber=%d\n", card.isNumber);
-}
-
-void print_opponent(Card *cards, int num_cards) {
-    printf("Cartas do oponente:\n");
-    for (int i = 0; i < num_cards; i++) {
-        print_card(cards[i]);
-    }
-    printf("\n");
-}
-
-Card *push_card(Card *cards, int *size, Card new_card) {
+Card *push_card(Card *cards, int *size, Card new_card)
+{
     Card *temp = realloc(cards, (*size + 1) * sizeof(Card));
-    
-    if (temp == NULL) {
+
+    if (temp == NULL)
+    {
         printf("Error allocating memory.\n");
         exit(1);
     }
-    
+
     temp[*size] = new_card;
     (*size)++;
-    
+
     sort_cards(temp, *size);
-    
+
     return temp;
 }
 
-Card draw_card() {
+Card draw_card()
+{
     int random_index = random_array_index(deck_size);
-    
+
     Card random_card = deck[random_index];
-    
+
     deck = compaction(deck, &deck_size, random_index);
-    
+
     return random_card;
 }
 
-void initialize_random() {
+void initialize_random()
+{
     srand(time(NULL));
 }
 
 void check_winner(int num_cards, bool is_player)
 {
-    if (num_cards == 0) {
+    if (num_cards == 0)
+    {
         printf("%s\n", is_player ? "Parabens! Voce ganhou" : "Voce perdeu...");
         play_again_choose();
     }
-
 }
 
 void play_again_choose()
@@ -2852,3 +2920,36 @@ void play_again_choose()
     scanf("%c", &choice);
     getchar();
 }
+
+bool are_strings_equal(char *str1, char *str2)
+{
+    return strcmp(str1, str2) == 0;
+}
+
+bool card_skip_next_player(Card card)
+{
+    return are_strings_equal(card.numberAction.action, "block") ||
+           are_strings_equal(card.numberAction.action, "reverse") ||
+           are_strings_equal(card.numberAction.action, "+2") ||
+           are_strings_equal(card.numberAction.action, "+4");
+}
+
+bool is_colored_draw_card(Card card) {
+    return !card.isNumber && are_strings_equal(card.numberAction.action, "+2");
+}
+
+void add_cards_to_other_player(Card** cards, int *num_cards, int num_cards_to_add) {
+    for (int i = 0; i < num_cards_to_add; i++) {
+        *cards = push_card(*cards, num_cards, draw_card());
+    }
+}
+
+/**
+ * RELATÓRIO DE FEITOS
+ * [x] - Implementação de bloquear em cartas específicas
+ * [x] - Player / Oponente puxar duas cartas
+ * [x] - Variáveis declaradas de forma gramaticalmente correta
+ * [x] - Funções declaradas de forma gramaticalmente correta
+ * [] - Ação de +4
+ * [] - Trocar mãos na carta 0
+*/
