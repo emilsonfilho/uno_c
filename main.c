@@ -2585,7 +2585,6 @@ Card play_card(Card **cards, int *cards_size, Card *top_card, Color chosen_color
             {
                 if (choice == -1)
                 {
-
                     *cards = push_card(*cards, cards_size, draw_card());
                     *player_played = false;
                     return (Card){WILD, {.action = ""}, false};
@@ -2646,6 +2645,7 @@ void show_game_screen(char ***history, int *history_size, Card *player_cards, in
     *player_drawed = false;
 
     check_winner(*num_player_cards, true);
+    sleep_time(1000);
 
     bool opponent_played = false;
     Card opponent_played_card = opponent_play(&opponent_cards, num_opponent_cards, *top_card, *chosen_color, &opponent_played, *opponent_skipped);
@@ -2656,6 +2656,7 @@ void show_game_screen(char ***history, int *history_size, Card *player_cards, in
     *opponent_drawed = false;
 
     check_winner(*num_opponent_cards, false);
+    sleep_time(1000);
 
     show_game_screen(history, history_size, player_cards, num_player_cards, opponent_cards, num_opponent_cards, top_card, chosen_color, player_skipped, opponent_skipped, player_drawed, opponent_drawed);
 
@@ -2747,10 +2748,10 @@ void check_play(Card card, Color *chosen_color, bool player_played, bool *oppone
             while (!was_valid_play)
             {
                 printf("Qual cor você escolhe?\n");
-                printf("[1] Vermelho\n");
-                printf("[2] Verde\n");
-                printf("[3] Azul\n");
-                printf("[4] Amarelo\n");
+                printf("%s %s%s%s\n", "[1]", ANSI_RED, "Vermelho", RESET);
+                printf("%s %s%s%s\n", "[2]", ANSI_GREEN, "Verde", RESET);
+                printf("%s %s%s%s\n", "[3]", ANSI_BLUE, "Azul", RESET);
+                printf("%s %s%s%s\n", "[4]", ANSI_YELLOW, "Amarelo", RESET);
                 scanf("%d", &selected_color);
 
                 if (is_in_interval(selected_color, 1, 4))
@@ -2761,6 +2762,7 @@ void check_play(Card card, Color *chosen_color, bool player_played, bool *oppone
                     // The card can be +4 (which skips the next move)
                     if (card_skip_next_player(card))
                     {
+                        add_cards_to_other_player(opponent_cards, num_opponent_cards, 4);
                         *opponent_skip = true;
                     }
                 }
@@ -2786,6 +2788,8 @@ void check_play(Card card, Color *chosen_color, bool player_played, bool *oppone
                         *opponent_draws = true;
                     }
                 }
+            } else if (card.numberAction.number == 0) {
+                // Change the players' hands
             }
         }
     }
@@ -2844,6 +2848,8 @@ void check_opponent_play(Card card, Color *chosen_color, bool opponent_played, b
 
             if (card_skip_next_player(card))
             {
+                // The only card that can jump on WILD is +4
+                add_cards_to_other_player(player_cards, num_player_cards, 4);
                 *player_skip = true;
             }
         }
@@ -2950,6 +2956,7 @@ void add_cards_to_other_player(Card** cards, int *num_cards, int num_cards_to_ad
  * [x] - Player / Oponente puxar duas cartas
  * [x] - Variáveis declaradas de forma gramaticalmente correta
  * [x] - Funções declaradas de forma gramaticalmente correta
- * [] - Ação de +4
+ * [x] - Colocar as cores nas opções de WILD
+ * [x] - Ação de +4
  * [] - Trocar mãos na carta 0
 */
