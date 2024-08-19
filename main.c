@@ -131,6 +131,34 @@ void copy_action(Card *last_card, const char *action);
  *
  * - Function `create_deck`: Tests if the created deck of cards matches the
  *   expected deck configuration.
+ * - Function `reverse`: Tests whether the function returns the 
+ *   array of strings in a reversed form
+ * - Function `get_color_name`: Tests if it returns the right color
+ * - Function `get_color_ansi`: Tests if it returns the right color 
+ *   in ANSI format
+ * - Function `is_normal_card`: Tests if a card is "normal"
+ * - Function `is_invalid_color`: Tests if a given color is invalid
+ * - Function `compaction`: Tests whether the 
+ *   Compaction & Left Shifting method is performed correctly
+ * - Function `str_compaction`: Tests whether the 
+ *   Compaction & Left Shifting method for strings is executed correctly
+ * - Function `push_history`: Tests whether the history is 
+ *   updated correctly (See push_history behavior)
+ * - Function `count_digits`: Tests the digit count of a number
+ * - Function `int_to_string`: Tests whether a number is 
+ *   converted to a string correctly
+ * - Function `concat_char`: Tests if two characters are concatenated
+ * - Function `concat_string`: Tests if two strings are concatenated
+ * - Function int_between_parenthesis: Tests if a number is 
+ *   placed inside parentheses
+ * - Function `sort_cards`: Tests whether an array 
+ *   of cards has been sorted correctly
+ * - Function `is_color_match`: Test if the colors of two cards are the same
+ * - Function `is_number_match`: Test if the numbers on two cards are the same
+ * - Function `is_wild_card`: Test if a card is WILD
+ * - Function `is_in_interval`: Tests if a number is within a range
+ * - Function `can_play_card`:  Test whether a card can be played
+ * - Function `push_cards`: A new card has been placed in the hand correctly
  *
  * Any errors detected during the tests will trigger an error message using
  * `show_card_error_message`, which will indicate discrepancies between the
@@ -181,6 +209,27 @@ void show_home_screen();
  * The user's choice is read and the program transitions to the corresponding state.
  */
 void show_main_menu_screen();
+
+/**
+ * @brief Initializes and displays the screen for a new game.
+ * 
+ * This function sets up the initial state for a new game by clearing the input buffer and initializing various game variables. 
+ * It handles the process of drawing and distributing cards, updating the game history, and showing the game screen. 
+ * It also manages the display of the game at different stages of setup.
+ * 
+ * The function performs the following steps:
+ * 1. Clears the input buffer.
+ * 2. Initializes variables related to game state, history, and cards.
+ * 3. Retrieves initial cards for both the player and opponent, and sets up the top card on the table.
+ * 4. Sorts the player's cards and updates the game history.
+ * 5. Displays the game screen at various stages of card distribution.
+ * 6. Calls the `show_game_screen` function to present the final setup.
+ * 7. Frees allocated memory for the history and player cards.
+ * 
+ * @param None
+ * 
+ * @return void
+ */
 
 void show_new_game_screen();
 
@@ -258,9 +307,47 @@ void stylized_print(char *message, int n, ...);
  */
 void print_bold(char *message);
 
-void print_arr(Card *arr, int size);
+/**
+ * @brief Displays the current state of the game to the user.
+ * 
+ * This function clears the screen, prints the game history, displays the top card on the table, and shows the hands of the player and opponents. 
+ * It pauses for a transition time to allow the user to view the updates.
+ * 
+ * @param messages A pointer to an array of strings representing the game history messages.
+ * @param messages_length The number of messages in the history array.
+ * @param top_card The card currently on top of the table.
+ * @param num_opponent_cards The number of cards held by opponents.
+ * @param player_cards A pointer to an array of cards held by the player.
+ * @param num_player_cards The number of cards held by the player.
+ */
 void print_game(char **messages, int messages_length, Card top_card, int num_opponent_cards, Card *player_cards, int num_player_cards);
+
+/**
+ * @brief Prints the last three messages from the game history.
+ * 
+ * This function reverses the order of the history messages and prints the most recent three messages. 
+ * It formats each message with a prefix and ensures that if there are fewer than three messages, 
+ * empty lines are printed to maintain a consistent display.
+ * 
+ * @param messages A pointer to an array of strings representing the game history messages.
+ * @param messages_length The number of messages in the history array.
+ */
 void print_history(char **messages, int messages_length);
+
+/**
+ * @brief Prints the current top card on the table.
+ * 
+ * This function formats and displays the top card on the table, 
+ * including its color and number or action. 
+ * It constructs a string representation of the card, applies appropriate ANSI color codes, 
+ * and prints the card information with a prefix. 
+ * It handles both numeric and action cards differently by 
+ * converting their details into a string format suitable for display.
+ * 
+ * @param top_card The card currently on top of the table, containing its color, number, and action.
+ * 
+ * @return void
+ */
 void print_table(Card top_card);
 void print_line();
 
@@ -340,6 +427,20 @@ bool is_invalid_color(Color color);
  */
 bool are_arrays_equal(const char **arr1, int len1, const char **arr2, int len2);
 
+/**
+ * @brief Compares two arrays of cards to determine if they are equal.
+ * 
+ * This function checks if two arrays of cards are identical in terms of length and content. 
+ * The comparison includes card color, type (number or action), and for number cards, the number itself. 
+ * For action cards, it checks if the action strings are equal.
+ * 
+ * @param arr1 Pointer to the first array of `Card` structures.
+ * @param len1 The length of the first array.
+ * @param arr2 Pointer to the second array of `Card` structures.
+ * @param len2 The length of the second array.
+ * 
+ * @return `true` if the arrays are equal, `false` otherwise.
+ */
 bool are_card_arrays_equal(Card *arr1, int len1, Card *arr2, int len2);
 
 /**
@@ -510,38 +611,400 @@ void swap(Card *arr, int i, int j);
  */
 void sort_cards(Card *arr, int n);
 
+/**
+ * @brief Removes an element from a dynamically allocated array of strings and resizes the array.
+ * 
+ * This function removes the string at the specified index (`hole`) from an array of string pointers. 
+ * It then compacts the array by shifting the remaining elements and resizes the array to reflect the new size. 
+ * Memory is managed by freeing the removed string and reallocating the array.
+ * 
+ * @param arr Pointer to the array of strings.
+ * @param arr_size Pointer to the size of the array. This will be updated to reflect the new size after compaction.
+ * @param hole Index of the element to be removed from the array.
+ * 
+ * @return A pointer to the resized array of strings.
+ */
 char **str_compaction(char **arr, int *arr_size, int hole);
+
+/**
+ * @brief Prints a placeholder representation of the opponent's cards.
+ * 
+ * This function constructs and displays a string 
+ * that represents the opponent's cards using placeholder characters. 
+ * Each card is represented by the character 'x', and the entire hand is enclosed in square brackets. 
+ * The representation is then printed with a prefix "Oponente: ".
+ * 
+ * @param num_cards The number of opponent's cards to be represented in the output.
+ * 
+ * @return void
+ */
 void print_opponent_cards(int num_cards);
+
+/**
+ * @brief Prints the player's cards with their respective details.
+ * 
+ * This function iterates through an array of player's cards 
+ * and prints each card with its color and number or action. 
+ * Each card is formatted with a prefix indicating its index and is displayed using a corresponding color. 
+ * 
+ * @param cards Pointer to an array of `Card` structures representing the player's cards.
+ * @param num_cards The number of cards in the player's hand.
+ * 
+ * @return void
+ */
 void print_player_cards(Card *cards, int num_cards);
+
+/**
+ * @brief Handles the player's choice of a card to play and updates the game state accordingly.
+ * 
+ * This function prompts the player to select a card from their hand to play. 
+ * It checks if the selected card is valid and can be played based on the top card and chosen color. 
+ * It also handles special cases where the player opts to draw a new card 
+ * or if the player has skipped their turn.
+ * 
+ * @param cards Pointer to the player's hand (array of `Card` structures). 
+ *                      This will be updated if the chosen card is removed from the hand.
+ * @param cards_size Pointer to the size of the player's hand. 
+ *                           This will be updated if the chosen card is removed from the hand.
+ * @param top_card Pointer to the current top card on the table.
+ * @param chosen_color The color chosen for the card to be played.
+ * @param player_played Flag indicating if the player has played a card.
+ * @param player_skipped Flag indicating if the player has skipped their turn.
+ * 
+ * @return The `Card` that the player has chosen to play, 
+ *         or a default `WILD` card if the player has skipped or drawn a new card.
+ */
 Card play_card(Card **cards, int *cards_size, Card *top_card, Color chosen_color, bool *player_played, bool player_skipped);
+
+/**
+ * @brief Deletes the last printed line in the console output.
+ * 
+ * This function removes the most recently printed line from the console by 
+ * moving the cursor up one line and clearing that line. 
+ * This is useful for updating or removing lines in a dynamic text-based user interface.
+ */
 void delete_last_line();
+
+/**
+ * @brief Deletes lines from the console based on error status.
+ * 
+ * This function removes one or two lines from the console output depending on whether the last entry was invalid. 
+ * If the last entry was invalid, it removes the most recent line (which typically contains the error message) 
+ * and then deletes the line immediately before it.
+ * 
+ * @param was_last_entry_invalid A boolean flag indicating whether the last entry was invalid. 
+ *                               If `true`, the most recent line is removed before deleting the next line.
+ */
 void delete_lines_by_errors(bool was_last_entry_invalid);
+
+/**
+ * @brief Displays the current game screen and manages the game flow for both the player and the opponent.
+ * 
+ * This function orchestrates the game screen updates, including displaying the current state of the game, 
+ * handling player and opponent actions, updating the game state, and checking for winners. 
+ * It calls various functions to process card plays, update the game table, and manage the game history.
+ * 
+ * @param history Pointer to a pointer to the history array of strings. This will be updated with new game history.
+ * @param history_size Pointer to the size of the history array. This will be updated if the history grows.
+ * @param player_cards Pointer to the array of `Card` structures representing the player's hand. This will be updated if the player plays or draws cards.
+ * @param num_player_cards Pointer to the number of cards in the player's hand. This will be updated as cards are played or drawn.
+ * @param opponent_cards Pointer to the array of `Card` structures representing the opponent's hand. This will be updated if the opponent plays or draws cards.
+ * @param num_opponent_cards Pointer to the number of cards in the opponent's hand. This will be updated as cards are played or drawn.
+ * @param top_card Pointer to the `Card` currently on top of the table. This will be updated based on card plays.
+ * @param chosen_color Pointer to the color chosen for card plays. This will be updated as needed.
+ * @param player_skipped Pointer to a boolean flag indicating if the player has skipped their turn. This will be updated.
+ * @param opponent_skipped Pointer to a boolean flag indicating if the opponent has skipped their turn. This will be updated.
+ * @param player_drawed Pointer to a boolean flag indicating if the player has drawn a card. This will be updated.
+ * @param opponent_drawed Pointer to a boolean flag indicating if the opponent has drawn a card. This will be updated.
+ */
 void show_game_screen(char ***history, int *history_size, Card *player_cards, int *num_player_cards, Card *opponent_cards, int *num_opponent_cards, Card *top_card, Color *chosen_color, bool *player_skipped, bool *opponent_skipped, bool *player_drawed, bool *opponent_drawed);
+
+/**
+ * @brief Updates the top card on the table if a new card has been played.
+ * 
+ * This function updates the `current` top card on the table with the `new_card` 
+ * if the `played` flag is `true`. If no card has been played (`played` is `false`), 
+ * the top card remains unchanged.
+ * 
+ * @param current Pointer to the `Card` currently on top of the table. This will be updated if a new card has been played.
+ * @param new_card The `Card` that should be placed on top of the table if a card has been played.
+ * @param played Boolean flag indicating whether a card has been played.
+ */
+
 void update_table(Card *current, Card new_card, bool played);
+
+/**
+ * @brief Determines and executes the opponent's move in the game.
+ * 
+ * This function simulates the opponent's turn by selecting a valid card from their hand to play. 
+ * If no valid card is found, the opponent draws a new card. 
+ * The function updates the game state based on whether the opponent plays a card or not.
+ * 
+ * @param cards Pointer to the opponent's hand (array of `Card` structures). 
+ *              This will be updated if a card is played or drawn.
+ * @param num_cards Pointer to the number of cards in the opponent's hand. 
+ *                  This will be updated if a card is played or drawn.
+ * @param top_card The `Card` currently on top of the table.
+ * @param chosen_color The color chosen for the card to be played.
+ * @param opponent_played Flag indicating if the opponent has played a card.
+ * @param opponent_skipped Flag indicating if the opponent has skipped their turn.
+ * 
+ * @return The `Card` that the opponent has chosen to play, or a default `WILD` card if no card was played.
+ */
 Card opponent_play(Card **cards, int *num_cards, Card top_card, Color chosen_color, bool *opponent_played, bool opponent_skipped);
 
+/**
+ * @brief Checks if two cards have the same color.
+ * 
+ * @param card1 The first `Card` to be compared.
+ * @param card2 The second `Card` to be compared.
+ * 
+ * @return `true` if the colors of `card1` and `card2` match, otherwise `false`.
+ */
 bool is_color_match(Card card1, Card card2);
+
+/**
+ * @brief Checks if two cards have the same number value.
+ * 
+ * @param card1 The first `Card` to be compared.
+ * @param card2 The second `Card` to be compared.
+ * 
+ * @return `true` if both cards are number cards and have the same number value, otherwise `false`.
+ */
 bool is_number_match(Card card1, Card card2);
+
+/**
+ * @brief Checks if two cards have the same action.
+ * 
+ * @param card1 The first `Card` to be compared.
+ * @param card2 The second `Card` to be compared.
+ * 
+ * @return `true` if both cards are action cards and have the same action, otherwise `false`.
+ */
 bool is_action_match(Card card1, Card card2);
+
+/**
+ * @brief Checks if a card is a wild card.
+ * 
+ * @param card The `Card` to be checked.
+ * 
+ * @return `true` if the card is a wild card, otherwise `false`.
+ */
+
 bool is_wild_card(Card card);
 
+/**
+ * @brief Checks if a number is within a specified interval.
+ * 
+ * @param number The integer to be checked.
+ * @param min The lower bound of the interval (inclusive).
+ * @param max The upper bound of the interval (inclusive).
+ * 
+ * @return `true` if the number is within the interval `[min, max]`, otherwise `false`.
+ */
 bool is_in_interval(int number, int min, int max);
 
+/**
+ * @brief Handles the display of an error message for an invalid choice.
+ * 
+ * This function manages the display of error messages when an invalid choice is made. 
+ * It updates the error state, clears any previous error messages, and prints the new error message.
+ * 
+ * @param was_last_entry_invalid Pointer to a boolean flag indicating if the last entry was invalid. This will be updated to `true`.
+ * @param message The error message to be displayed to the user.
+ */
 void handle_invalid_choice(bool *was_last_entry_invalid, char *message);
+
+/**
+ * @brief Determines if a card can be legally played based on game rules.
+ * 
+ * This function checks if a given `Card` can be played on top of the current `top_card` 
+ * according to the game rules. The card can be played if it matches the color, number, 
+ * or action of the top card, or if it is a wild card. Additionally, if the top card is a wild card, 
+ * the card can be played if its color matches the chosen color.
+ * 
+ * @param chosen The card that is being evaluated for play.
+ * @param top_card The current card on top of the table.
+ * @param chosen_color The color chosen for the card play, relevant if the top card is a wild card.
+ * 
+ * @return `true` if the `chosen` card can be played on top of the `top_card` based on the rules, otherwise `false`.
+ */
 bool can_play_card(Card chosen, Card top_card, Color chosen_color);
-void check_play(Card card, Color *chosen_color, bool player_played, bool *opponent_skip, Card **opponent_cards, int *num_opponent_cards, bool *opponent_draws);
+
+/**
+ * @brief Evaluates the effects of a card played by the player and updates the game state accordingly.
+ * 
+ * This function checks the implications of playing a given card, 
+ * including handling special cards (wild cards and action cards), 
+ * updating the chosen color, and managing game effects such as skipping turns or drawing cards. 
+ * It modifies various game state variables based on the card played.
+ * 
+ * @param card The card that has been played by the player.
+ * @param chosen_color The color chosen for the card play, updated based on the played card and user input.
+ * @param player_played Flag indicating if the player has played a card.
+ * @param opponent_skip Flag indicating if the opponent's turn should be skipped.
+ * @param opponent_cards Pointer to the opponent's hand (array of `Card` structures). This may be updated if cards are added.
+ * @param num_opponent_cards Pointer to the number of cards in the opponent's hand. This may be updated if cards are added.
+ * @param opponent_draws Flag indicating if the opponent should draw cards.
+ * @param player_cards Pointer to the player's hand (array of `Card` structures). This may be updated if cards are reversed.
+ * @param num_player_cards Pointer to the number of cards in the player's hand. This may be updated if cards are reversed.
+ */
+void check_play(Card card, Color *chosen_color, bool player_played, bool *opponent_skip, Card **opponent_cards, int *num_opponent_cards, bool *opponent_draws, Card **player_cards, int *num_player_cards);
+
+/**
+ * @brief Updates the game history based on the current actions and state.
+ * 
+ * This function appends new entries to the game history based on whether a card was played, 
+ * skipped, or drawn. 
+ * It records actions taken by the player or the opponent, 
+ * including special cases such as choosing a color for a wild card.
+ * 
+ * @param top_card The card that is currently on top of the table.
+ * @param chosen_color The color chosen if a wild card was played.
+ * @param history Pointer to the history array of messages. This will be updated with new entries.
+ * @param history_size Pointer to the number of entries in the history. This will be updated if new entries are added.
+ * @param is_player Flag indicating if the action was performed by the player (`true`) or the opponent (`false`).
+ * @param played Flag indicating if a card was played (`true`) or not (`false`).
+ * @param skipped Flag indicating if the turn was skipped (`true`) or not (`false`).
+ * @param drawed Flag indicating if cards were drawn (`true`) or not (`false`).
+ */
 void update_history(Card top_card, Color chosen_color, char ***history, int *history_size, bool is_player, bool played, bool skipped, bool drawed);
-void check_opponent_play(Card card, Color *chosen_color, bool opponent_played, bool *player_skip, Card **player_cards, int *num_player_cards, bool *player_draws);
+
+/**
+ * @brief Evaluates the effects of a card played by the opponent and updates the game state accordingly.
+ * 
+ * This function checks the consequences of the opponent playing a given card. 
+ * It handles special cases such as wild cards and action cards, updates the chosen color, 
+ * and manages game effects like skipping turns or drawing cards.
+ * 
+ * @param card The card that has been played by the opponent.
+ * @param chosen_color The color chosen for the card play, updated based on the played card and random selection.
+ * @param opponent_played Flag indicating if the opponent has played a card.
+ * @param player_skip Flag indicating if the player's turn should be skipped.
+ * @param player_cards Pointer to the player's hand (array of `Card` structures). This may be updated if cards are added.
+ * @param num_player_cards Pointer to the number of cards in the player's hand. This may be updated if cards are added.
+ * @param player_draws Flag indicating if the player should draw cards.
+ * @param opponent_cards Pointer to the opponent's hand (array of `Card` structures). This may be updated if cards are reversed.
+ * @param num_opponent_cards Pointer to the number of cards in the opponent's hand. This may be updated if cards are reversed.
+ */
+void check_opponent_play(Card card, Color *chosen_color, bool opponent_played, bool *player_skip, Card **player_cards, int *num_player_cards, bool *player_draws, Card **opponent_cards, int *num_opponent_cards);
+
+/**
+ * @brief Adds a new card to the end of the card array and sorts the array.
+ * 
+ * This function reallocates memory for the card array to accommodate one additional card, 
+ * appends the new card to the end of the array, and then sorts the array.
+ * 
+ * @param cards Pointer to the current array of cards.
+ * @param size Pointer to the number of cards in the array. This will be incremented by 1.
+ * @param new_card The card to be added to the array.
+ * 
+ * @return A pointer to the reallocated and sorted array of cards.
+ */
 Card *push_card(Card *cards, int *size, Card new_card);
+
+/**
+ * @brief Draws a random card from the deck and removes it from the deck.
+ * 
+ * This function selects a random card from the global deck, removes it from the deck, and returns it. 
+ * The deck is updated to reflect the removal of the drawn card.
+ * 
+ * @return The randomly drawn card from the deck.
+ */
 Card draw_card();
+
+/**
+ * @brief Initializes the random number generator with the current time as the seed.
+ */
 void initialize_random();
 
+/**
+ * @brief Checks if a player or opponent has won the game based on the number of remaining cards.
+ * 
+ * This function determines if a player or opponent has won the game 
+ * by checking if their number of remaining cards is zero. 
+ * If so, it displays a win or loss message and triggers the option to play again.
+ * 
+ * @param num_cards The number of cards remaining for the player or opponent.
+ * @param is_player Flag indicating if the check is for the player (`true`) or the opponent (`false`).
+ */
 void check_winner(int num_cards, bool is_player);
+
+/**
+ * @brief Prompts the user to choose whether to play the game again or exit.
+ * 
+ * This function displays a prompt asking the user if they want to play again. 
+ * It waits for a valid response (`'s'` for yes or `'n'` for no). 
+ * Based on the user's input, it either starts a new game or exits the program.
+ * 
+ * The function handles invalid inputs by prompting the user again until a valid response is received.
+ */
 void play_again_choose();
+
+/**
+ * @brief Compares two strings for equality.
+ * 
+ * This function checks if two strings are identical by comparing them. 
+ * It returns `true` if the strings are equal and `false` otherwise.
+ * 
+ * @param str1 The first string to compare.
+ * @param str2 The second string to compare.
+ * 
+ * @return `true` if the strings are equal; `false` otherwise.
+ */
+
 bool are_strings_equal(char *str1, char *str2);
+
+/**
+ * @brief Determines if a card causes the next player to be skipped or affected.
+ * 
+ * This function checks if a given card has an action that impacts the next player's turn. 
+ * Specifically, it checks if the card's action is one that blocks, reverses, draws 2, or draws 4 cards.
+ * 
+ * @param[in] card The card to check for special actions.
+ * 
+ * @return `true` if the card's action causes the next player to be skipped or affected; `false` otherwise.
+ */
 bool card_skip_next_player(Card card);
+
+/**
+ * @brief Checks if a card is a colored draw card.
+ * 
+ * This function determines if a given card is a colored draw card, 
+ * specifically a card with the "+2" action that affects the next player. 
+ * The card is considered a colored draw card if it is not a number card and has the "+2" action.
+ * 
+ * @param[in] card The card to check.
+ * 
+ * @return `true` if the card is a colored draw card; `false` otherwise.
+ */
 bool is_colored_draw_card(Card card);
-void add_cards_to_other_player(Card** cards, int *num_cards, int num_cards_to_add);
+
+/**
+ * @brief Adds a specified number of cards to another player's hand.
+ * 
+ * This function draws a number of cards from the deck and adds them to the other player's hand. 
+ * It updates the player's card array and the count of cards accordingly.
+ * 
+ * @param cards Pointer to the array of cards for the player to receive the new cards.
+ * @param num_cards Pointer to the number of cards in the player's hand. This will be incremented by the number of cards added.
+ * @param num_cards_to_add The number of cards to draw from the deck and add to the player's hand.
+ */
+void add_cards_to_other_player(Card **cards, int *num_cards, int num_cards_to_add);
+
+/**
+ * @brief Swaps the hands of two players.
+ * 
+ * This function exchanges the card arrays between two players, effectively reversing their hands. 
+ * It reallocates memory if necessary to ensure that both players' hands fit in the allocated space. 
+ * The sizes of the hands are also updated accordingly.
+ * 
+ * @param cards1 Pointer to the array of cards for the first player. This array will be updated to contain the cards from the second player.
+ * @param len1 Pointer to the number of cards in the first player's hand. This will be updated to reflect the new hand size.
+ * @param cards2 Pointer to the array of cards for the second player. This array will be updated to contain the cards from the first player.
+ * @param len2 Pointer to the number of cards in the second player's hand. This will be updated to reflect the new hand size.
+ */
+void reverse_hands(Card **cards1, int *len1, Card **cards2, int *len2);
 
 int state = HOME;
 Card *deck;
@@ -628,31 +1091,7 @@ Card *create_deck()
         }
     }
 
-    // print_arr(deck, MAX_CARDS);
-
     return deck;
-}
-
-void print_arr(Card arr[], int size)
-{
-    for (int i = 0; i < size; i++)
-    {
-        if (arr[i].color == WILD)
-        {
-            printf("Carta %d: Cor: %d, Ação: %s\n", i, arr[i].color, arr[i].numberAction.action);
-        }
-        else
-        {
-            if (arr[i].isNumber)
-            {
-                printf("Carta %d: Cor: %d, Número: %d\n", i, arr[i].color, arr[i].numberAction.number);
-            }
-            else
-            {
-                printf("Carta %d: Cor: %d, Ação: %s\n", i, arr[i].color, arr[i].numberAction.action);
-            }
-        }
-    }
 }
 
 void copy_action(Card *last_card, const char *action)
@@ -2245,7 +2684,7 @@ bool are_arrays_equal(const char **arr1, int len1, const char **arr2, int len2)
 
     for (int i = 0; i < len1; i++)
     {
-        if (!are_strings_equal((char *) arr1[i], (char *) arr2[i]))
+        if (!are_strings_equal((char *)arr1[i], (char *)arr2[i]))
             return false;
     }
 
@@ -2638,7 +3077,7 @@ void show_game_screen(char ***history, int *history_size, Card *player_cards, in
 
     bool player_played = true;
     Card played_card = play_card(&player_cards, num_player_cards, top_card, *chosen_color, &player_played, *player_skipped);
-    check_play(played_card, chosen_color, player_played, opponent_skipped, &opponent_cards, num_opponent_cards, opponent_drawed);
+    check_play(played_card, chosen_color, player_played, opponent_skipped, &opponent_cards, num_opponent_cards, opponent_drawed, &player_cards, num_player_cards);
     update_table(top_card, played_card, player_played);
     update_history(*top_card, *chosen_color, history, history_size, true, player_played, *player_skipped, *player_drawed);
     *player_skipped = false;
@@ -2649,7 +3088,7 @@ void show_game_screen(char ***history, int *history_size, Card *player_cards, in
 
     bool opponent_played = false;
     Card opponent_played_card = opponent_play(&opponent_cards, num_opponent_cards, *top_card, *chosen_color, &opponent_played, *opponent_skipped);
-    check_opponent_play(opponent_played_card, chosen_color, opponent_played, player_skipped, &player_cards, num_player_cards, player_drawed);
+    check_opponent_play(opponent_played_card, chosen_color, opponent_played, player_skipped, &player_cards, num_player_cards, player_drawed, &opponent_cards, num_opponent_cards);
     update_table(top_card, opponent_played_card, opponent_played);
     update_history(*top_card, *chosen_color, history, history_size, false, opponent_played, *opponent_skipped, *opponent_drawed);
     *opponent_skipped = false;
@@ -2736,7 +3175,7 @@ bool can_play_card(Card chosen, Card top_card, Color chosen_color)
     return false;
 }
 
-void check_play(Card card, Color *chosen_color, bool player_played, bool *opponent_skip, Card **opponent_cards, int *num_opponent_cards, bool *opponent_draws)
+void check_play(Card card, Color *chosen_color, bool player_played, bool *opponent_skip, Card **opponent_cards, int *num_opponent_cards, bool *opponent_draws, Card **player_cards, int *num_player_cards)
 {
     if (player_played)
     {
@@ -2783,13 +3222,17 @@ void check_play(Card card, Color *chosen_color, bool player_played, bool *oppone
                 {
                     *opponent_skip = true;
 
-                    if (is_colored_draw_card(card)) {
+                    if (is_colored_draw_card(card))
+                    {
                         add_cards_to_other_player(opponent_cards, num_opponent_cards, 2);
                         *opponent_draws = true;
                     }
                 }
-            } else if (card.numberAction.number == 0) {
+            }
+            else if (card.numberAction.number == 0)
+            {
                 // Change the players' hands
+                reverse_hands(player_cards, num_player_cards, opponent_cards, num_opponent_cards);
             }
         }
     }
@@ -2822,10 +3265,13 @@ void update_history(Card top_card, Color chosen_color, char ***history, int *his
     }
     else if (skipped)
     {
-        if (drawed) {
+        if (drawed)
+        {
             char *message = is_player ? "Voce puxou cartas" : "Oponente puxou cartas";
             *history = push_history(*history, history_size, message);
-        } else {
+        }
+        else
+        {
             char *message = is_player ? "Voce foi bloqueado" : "Oponente foi bloqueado";
             *history = push_history(*history, history_size, message);
         }
@@ -2837,7 +3283,7 @@ void update_history(Card top_card, Color chosen_color, char ***history, int *his
     }
 }
 
-void check_opponent_play(Card card, Color *chosen_color, bool opponent_played, bool *player_skip, Card **player_cards, int *num_player_cards, bool *player_draws)
+void check_opponent_play(Card card, Color *chosen_color, bool opponent_played, bool *player_skip, Card **player_cards, int *num_player_cards, bool *player_draws, Card **opponent_cards, int *num_opponent_cards)
 {
     if (opponent_played)
     {
@@ -2863,11 +3309,14 @@ void check_opponent_play(Card card, Color *chosen_color, bool opponent_played, b
                 {
                     *player_skip = true;
 
-                    if (is_colored_draw_card(card)) {
+                    if (is_colored_draw_card(card))
+                    {
                         add_cards_to_other_player(player_cards, num_player_cards, 2);
                         *player_draws = true;
                     }
                 }
+            } else if (card.numberAction.number == 0) {
+                reverse_hands(player_cards, num_player_cards, opponent_cards, num_opponent_cards);
             }
         }
     }
@@ -2920,11 +3369,25 @@ void play_again_choose()
 {
     clear_input_buffer();
 
-    printf("Deseja jogar novamente? [s/n] ");
     // ...
-    char choice = 's';
-    scanf("%c", &choice);
-    getchar();
+    bool was_valid_choice = false, was_last_entry_invalid = false;
+    char choice = ' ';
+
+    while (!was_valid_choice) {
+        printf("Deseja jogar novamente? [s/n] ");
+        scanf(" %c", &choice);
+
+        if (choice == 'S' || choice == 's' || choice == 'N' || choice == 'n') {
+            if (choice == 'S' || choice == 's') {
+                show_new_game_screen();
+            } else {
+                printf("Foi um prazer te ter como player! :)\n");
+                exit(1);
+            }
+        } else {
+            handle_invalid_choice(&was_last_entry_invalid, "Essa opção não é válida!");
+        }
+    }
 }
 
 bool are_strings_equal(char *str1, char *str2)
@@ -2940,23 +3403,45 @@ bool card_skip_next_player(Card card)
            are_strings_equal(card.numberAction.action, "+4");
 }
 
-bool is_colored_draw_card(Card card) {
+bool is_colored_draw_card(Card card)
+{
     return !card.isNumber && are_strings_equal(card.numberAction.action, "+2");
 }
 
-void add_cards_to_other_player(Card** cards, int *num_cards, int num_cards_to_add) {
-    for (int i = 0; i < num_cards_to_add; i++) {
+void add_cards_to_other_player(Card **cards, int *num_cards, int num_cards_to_add)
+{
+    for (int i = 0; i < num_cards_to_add; i++)
+    {
         *cards = push_card(*cards, num_cards, draw_card());
     }
 }
 
-/**
- * RELATÓRIO DE FEITOS
- * [x] - Implementação de bloquear em cartas específicas
- * [x] - Player / Oponente puxar duas cartas
- * [x] - Variáveis declaradas de forma gramaticalmente correta
- * [x] - Funções declaradas de forma gramaticalmente correta
- * [x] - Colocar as cores nas opções de WILD
- * [x] - Ação de +4
- * [] - Trocar mãos na carta 0
-*/
+void reverse_hands(Card **cards1, int *len1, Card **cards2, int *len2)
+{
+    if (*len1 > *len2)
+    {
+        *cards2 = realloc(*cards2, *len1 * sizeof(Card));
+    }
+    else if (*len2 > *len1)
+    {
+        *cards1 = realloc(*cards1, *len2 * sizeof(Card));
+    }
+
+    Card *temp = (Card *)malloc(*len1 * sizeof(Card));
+    memcpy(temp, *cards1, *len1 * sizeof(Card));
+
+    memcpy(*cards1, *cards2, *len2 * sizeof(Card));
+    memcpy(*cards2, temp, *len1 * sizeof(Card));
+
+    free(temp);
+
+    int temp_size = *len1;
+    *len1 = *len2;
+    *len2 = temp_size;
+
+    if (*len1 > *len2) {
+        *cards2 = realloc(*cards2, *len2 * sizeof(Card));
+    } else {
+        *cards1 = realloc(*cards1, *len1 * sizeof(Card));
+    }
+}
