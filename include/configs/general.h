@@ -1,0 +1,9 @@
+#ifndef CONFIGS_H
+#define CONFIGS_H
+
+#define MAX_CARDS 108
+#define TRANSITION_TIME 1000
+#define SCREEN_LENGTH 50
+#define INITIAL_NUMBER_CARDS 7
+
+#endif
