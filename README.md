@@ -13,6 +13,8 @@
 * Badges
 * Descrição do Projeto
 * Status do Projeto
+* Como instalar?
+* De dev para dev
 * Funcionalidades
 * Demonstrações
 
@@ -22,7 +24,7 @@ Este repositório contém a implementação de um jogo de Uno em linguagem C, de
 
 # 🎣 Status do Projeto
 
-🍃 *Projeto sendo finalizado* 🍃
+⛔️ **Projeto finalizado!!** ⛔️
 
 Contribuições construtivas sempre serão bem-vindas!
 
