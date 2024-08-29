@@ -1,6 +1,6 @@
 # ☯ Apresentação
 
-![capa_apresentacao](../../Pictures/Canva/Jogo_20240827_213055_0000.png)
+![Banner do projeto](presentation/banner.png)
 
 # 🍒 Badges
 
